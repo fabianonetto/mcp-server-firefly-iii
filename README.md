@@ -61,7 +61,7 @@ Run the server on a hosted machine with a `PORT`:
 export PORT=3000
 npx -y mcp-server-firefly-iii
 ```
-Then, point ChatGPT to `http://your-server-ip:3000/openapi.json`.
+Then, point ChatGPT to `http://your-server-ip:PORT/openapi.json`.
 
 ## 📜 Documentation Files
 - **`README.md`**: Human-readable setup and usage guide.
