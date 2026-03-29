@@ -1,6 +1,6 @@
 # Universal Firefly III AI Bridge (MCP + OpenAPI)
 
-A unified server that connects your [Firefly III](https://www.firefly-iii.org/) instance to any AI platform. This server speaks multiple "AI languages" simultaneously.
+A unified server that connects your AI assistants to your [Firefly III](https://github.com/firefly-iii/firefly-iii) personal finance instance. This server speaks multiple "AI languages" simultaneously.
 
 ## 🚀 One Bridge, All AIs
 
@@ -67,6 +67,9 @@ Then, point ChatGPT to `http://your-server-ip:3000/openapi.json`.
 - **`README.md`**: Human-readable setup and usage guide.
 - **`gemini.md`**: AI-readable instructions for Gemini Agents.
 - **`/openapi.json`**: Auto-generated specification for ChatGPT Actions.
+
+## ✨ Created with Gemini CLI
+This project was built using **Gemini CLI vibecoding**. Feedback and contributions are always welcome!
 
 ## 🔒 Security
 - Use a VPN or SSH tunnel if exposing this server to the internet.
