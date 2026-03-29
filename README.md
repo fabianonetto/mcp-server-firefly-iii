@@ -68,6 +68,14 @@ Then, point ChatGPT to `http://your-server-ip:PORT/openapi.json`.
 - **`gemini.md`**: AI-readable instructions for Gemini Agents.
 - **`/openapi.json`**: Auto-generated specification for ChatGPT Actions.
 
+## 🗺️ Roadmap
+We are working towards a full-fledged Firefly III integration. Check out our [v1.1 Milestone](https://github.com/fabianonetto/mcp-server-firefly-iii/milestone/1).
+
+- [ ] [Categories & Tags Management](https://github.com/fabianonetto/mcp-server-firefly-iii/issues/1)
+- [ ] [Bills & Recurring Transactions](https://github.com/fabianonetto/mcp-server-firefly-iii/issues/2)
+- [ ] [Advanced Search Tool](https://github.com/fabianonetto/mcp-server-firefly-iii/issues/3)
+- [ ] [Piggy Banks Integration](https://github.com/fabianonetto/mcp-server-firefly-iii/issues/4)
+
 ## ✨ Created with Gemini CLI
 This project was built using **Gemini CLI vibecoding**. Feedback and contributions are always welcome!
 
