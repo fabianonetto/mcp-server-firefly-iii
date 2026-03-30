@@ -65,17 +65,18 @@ Then, point ChatGPT to `http://your-server-ip:PORT/openapi.json`.
 
 ## 📜 Documentation
 - [**Tool Reference (API.md)**](docs/API.md): Detailed list of all tools and parameters.
+- [**Prompt Gallery (PROMPTS.md)**](docs/PROMPTS.md): Example prompts for interacting with the AI.
 - [**Testing Guide (TESTING.md)**](docs/TESTING.md): How to run and write automated tests.
 - [**Gemini Manifest (gemini.md)**](gemini.md): Instructions for Gemini Agents.
-- [**OpenAPI Spec**](/openapi.json): Specification for ChatGPT Actions (available when running in Web mode).
 
-## 🗺️ Roadmap
-We are working towards a full-fledged Firefly III integration. Check out our [v1.1 Milestone](https://github.com/fabianonetto/mcp-server-firefly-iii/milestone/1).
+## 🗺️ Roadmap (V2.0 - Exhaustive API Integration)
+We are moving beyond the MVP to support 100% of Firefly III capabilities. 
 
-- [x] [Categories & Tags Management](https://github.com/fabianonetto/mcp-server-firefly-iii/issues/1) (v1.1.0)
-- [x] [Bills & Recurring Transactions](https://github.com/fabianonetto/mcp-server-firefly-iii/issues/2) (v1.2.0)
-- [x] [Advanced Search Tool](https://github.com/fabianonetto/mcp-server-firefly-iii/issues/3) (v1.3.0)
-- [x] [Piggy Banks Integration](https://github.com/fabianonetto/mcp-server-firefly-iii/issues/4) (v1.4.0)
+- [x] **v1.x Foundations** (14 Core Tools)
+- [ ] [**V2 Phase 1: Full Lifecycle (CRUD)**](https://github.com/fabianonetto/mcp-server-firefly-iii/issues/5): Update/Delete support.
+- [ ] [**V2 Phase 2: Currencies & Metadata**](https://github.com/fabianonetto/mcp-server-firefly-iii/issues/6): Multi-currency support.
+- [ ] [**V2 Phase 3: Automation & Rules**](https://github.com/fabianonetto/mcp-server-firefly-iii/issues/7): Trigger system logic.
+- [ ] [**V2 Phase 4: Attachments & Insights**](https://github.com/fabianonetto/mcp-server-firefly-iii/issues/8): Receipts and advanced reports.
 
 ## ✨ Created with Gemini CLI
 This project was built using **Gemini CLI vibecoding**. Feedback and contributions are always welcome!
