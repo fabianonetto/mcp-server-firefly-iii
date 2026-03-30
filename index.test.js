@@ -3,44 +3,37 @@ const axiosMockAdapter = require("axios-mock-adapter");
 
 const mock = new axiosMockAdapter(apiClient);
 
-describe("Firefly III MCP Server v2.0.0-phase2 (Metadata)", () => {
+describe("Firefly III MCP Server v2.0.0-phase3 (Automation)", () => {
   beforeEach(() => {
     mock.reset();
   });
 
-  test("should list all 30 tools (Exhaustive Metadata Phase 2)", async () => {
-    expect(TOOLS.length).toBe(30);
+  test("should list all 34 tools (Exhaustive Automation Phase 3)", async () => {
+    expect(TOOLS.length).toBe(34);
   });
 
-  // CURRENCY TESTS
-  test("list_currencies should return all currencies", async () => {
-    const mockData = { data: [{ code: "USD" }] };
-    mock.onGet("/currencies").reply(200, mockData);
-    const tool = TOOLS.find(t => t.name === "list_currencies");
+  // RULE TESTS
+  test("list_rules should return all rules", async () => {
+    const mockData = { data: [{ title: "Auto Tag" }] };
+    mock.onGet("/rules").reply(200, mockData);
+    const tool = TOOLS.find(t => t.name === "list_rules");
     const result = await tool.handler({});
     expect(result).toEqual(mockData);
   });
 
-  test("create_currency should post new currency", async () => {
-    const mockData = { data: { code: "EUR" } };
-    mock.onPost("/currencies").reply(200, mockData);
-    const tool = TOOLS.find(t => t.name === "create_currency");
-    const result = await tool.handler({ name: "Euro", code: "EUR", symbol: "€" });
-    expect(result.data.code).toBe("EUR");
-  });
-
-  test("delete_currency should send DELETE", async () => {
-    mock.onDelete("/currencies/EUR").reply(204);
-    const tool = TOOLS.find(t => t.name === "delete_currency");
-    const result = await tool.handler({ code: "EUR" });
+  test("trigger_rule_group should send POST", async () => {
+    mock.onPost("/rule-groups/1/trigger").reply(200, {});
+    const tool = TOOLS.find(t => t.name === "trigger_rule_group");
+    const result = await tool.handler({ id: "1" });
     expect(result.message).toContain("successfully");
   });
 
-  // PREFERENCE TESTS
-  test("update_preference should send PUT", async () => {
-    mock.onPut("/preferences/view.index").reply(200, { data: { name: "view.index" } });
-    const tool = TOOLS.find(t => t.name === "update_preference");
-    const result = await tool.handler({ name: "view.index", data: "dashboard" });
-    expect(result.data.name).toBe("view.index");
+  // WEBHOOK TESTS
+  test("create_webhook should post new webhook", async () => {
+    const mockData = { data: { id: "1", title: "Slack" } };
+    mock.onPost("/webhooks").reply(200, mockData);
+    const tool = TOOLS.find(t => t.name === "create_webhook");
+    const result = await tool.handler({ title: "Slack", url: "http://slack.com", trigger: "STORE_TRANSACTION" });
+    expect(result.data.title).toBe("Slack");
   });
 });

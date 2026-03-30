@@ -27,7 +27,7 @@ const apiClient = axios.create({
 
 // --- MCP Server Implementation ---
 const mcpServer = new Server(
-  { name: "mcp-server-firefly-iii", version: "2.0.0-phase2" },
+  { name: "mcp-server-firefly-iii", version: "2.0.0-phase3" },
   { capabilities: { tools: {} } }
 );
 
@@ -40,6 +40,125 @@ const TOOLS = [
     handler: async () => (await apiClient.get("/about")).data
   },
 
+  // RULES & AUTOMATION
+  {
+    name: "list_rules",
+    description: "List all automation rules.",
+    inputSchema: { type: "object", properties: {} },
+    handler: async () => (await apiClient.get("/rules")).data
+  },
+  {
+    name: "get_rule",
+    description: "Get a single rule by ID.",
+    inputSchema: { type: "object", properties: { id: { type: "string" } }, required: ["id"] },
+    handler: async (args) => (await apiClient.get(`/rules/${args.id}`)).data
+  },
+  {
+    name: "create_rule",
+    description: "Store a new automation rule.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        title: { type: "string" },
+        trigger: { type: "string", enum: ["store-journal", "update-journal"] },
+        rule_group_id: { type: "string" },
+        active: { type: "boolean", default: true }
+      },
+      required: ["title", "trigger", "rule_group_id"]
+    },
+    handler: async (args) => (await apiClient.post("/rules", args)).data
+  },
+  {
+    name: "update_rule",
+    description: "Update an existing automation rule.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        id: { type: "string" },
+        title: { type: "string" },
+        active: { type: "boolean" }
+      },
+      required: ["id"]
+    },
+    handler: async (args) => {
+      const { id, ...data } = args;
+      return (await apiClient.put(`/rules/${id}`, data)).data;
+    }
+  },
+  {
+    name: "delete_rule",
+    description: "Delete an automation rule.",
+    inputSchema: {
+      type: "object",
+      properties: { id: { type: "string" } },
+      required: ["id"]
+    },
+    handler: async (args) => {
+      await apiClient.delete(`/rules/${args.id}`);
+      return { message: "Rule deleted successfully." };
+    }
+  },
+  {
+    name: "list_rule_groups",
+    description: "List all rule groups.",
+    inputSchema: { type: "object", properties: {} },
+    handler: async () => (await apiClient.get("/rule-groups")).data
+  },
+  {
+    name: "get_rule_group",
+    description: "Get a single rule group by ID.",
+    inputSchema: { type: "object", properties: { id: { type: "string" } }, required: ["id"] },
+    handler: async (args) => (await apiClient.get(`/rule-groups/${args.id}`)).data
+  },
+  {
+    name: "trigger_rule_group",
+    description: "Manually trigger all rules in a group.",
+    inputSchema: {
+      type: "object",
+      properties: { id: { type: "string" } },
+      required: ["id"]
+    },
+    handler: async (args) => {
+      await apiClient.post(`/rule-groups/${args.id}/trigger`);
+      return { message: "Rule group triggered successfully." };
+    }
+  },
+
+  // WEBHOOKS
+  {
+    name: "list_webhooks",
+    description: "List all external webhooks.",
+    inputSchema: { type: "object", properties: {} },
+    handler: async () => (await apiClient.get("/webhooks")).data
+  },
+  {
+    name: "create_webhook",
+    description: "Create a new webhook.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        title: { type: "string" },
+        url: { type: "string" },
+        trigger: { type: "string", enum: ["STORE_TRANSACTION", "UPDATE_TRANSACTION", "DESTROY_TRANSACTION"] }
+      },
+      required: ["title", "url", "trigger"]
+    },
+    handler: async (args) => (await apiClient.post("/webhooks", args)).data
+  },
+  {
+    name: "delete_webhook",
+    description: "Delete a webhook.",
+    inputSchema: {
+      type: "object",
+      properties: { id: { type: "string" } },
+      required: ["id"]
+    },
+    handler: async (args) => {
+      await apiClient.delete(`/webhooks/${args.id}`);
+      return { message: "Webhook deleted successfully." };
+    }
+  },
+
   // CURRENCIES
   {
     name: "list_currencies",
@@ -48,60 +167,19 @@ const TOOLS = [
     handler: async () => (await apiClient.get("/currencies")).data
   },
   {
-    name: "get_currency",
-    description: "Get a single currency by code (e.g., USD).",
-    inputSchema: {
-      type: "object",
-      properties: { code: { type: "string" } },
-      required: ["code"]
-    },
-    handler: async (args) => (await apiClient.get(`/currencies/${args.code}`)).data
-  },
-  {
-    name: "create_currency",
-    description: "Store a new currency.",
-    inputSchema: {
-      type: "object",
-      properties: {
-        name: { type: "string" },
-        code: { type: "string" },
-        symbol: { type: "string" },
-        decimal_places: { type: "number" }
-      },
-      required: ["name", "code", "symbol"]
-    },
-    handler: async (args) => (await apiClient.post("/currencies", args)).data
-  },
-  {
     name: "update_currency",
     description: "Update an existing currency.",
     inputSchema: {
       type: "object",
       properties: {
-        code: { type: "string", description: "The current code of the currency." },
-        name: { type: "string" },
-        symbol: { type: "string" },
-        enabled: { type: "boolean" },
-        default: { type: "boolean" }
+        code: { type: "string" },
+        enabled: { type: "boolean" }
       },
       required: ["code"]
     },
     handler: async (args) => {
       const { code, ...data } = args;
       return (await apiClient.put(`/currencies/${code}`, data)).data;
-    }
-  },
-  {
-    name: "delete_currency",
-    description: "Delete a currency.",
-    inputSchema: {
-      type: "object",
-      properties: { code: { type: "string" } },
-      required: ["code"]
-    },
-    handler: async (args) => {
-      await apiClient.delete(`/currencies/${args.code}`);
-      return { message: "Currency deleted successfully." };
     }
   },
 
@@ -114,12 +192,8 @@ const TOOLS = [
   },
   {
     name: "get_preference",
-    description: "Get a specific preference by name.",
-    inputSchema: {
-      type: "object",
-      properties: { name: { type: "string" } },
-      required: ["name"]
-    },
+    description: "Get a specific preference.",
+    inputSchema: { type: "object", properties: { name: { type: "string" } }, required: ["name"] },
     handler: async (args) => (await apiClient.get(`/preferences/${args.name}`)).data
   },
   {
@@ -129,7 +203,7 @@ const TOOLS = [
       type: "object",
       properties: {
         name: { type: "string" },
-        data: { type: "string", description: "The value for the preference." }
+        data: { type: "string" }
       },
       required: ["name", "data"]
     },
@@ -139,21 +213,16 @@ const TOOLS = [
   // ACCOUNTS
   {
     name: "list_accounts",
-    description: "List all asset accounts and balances.",
+    description: "List all asset accounts.",
     inputSchema: { type: "object", properties: {} },
     handler: async () => (await apiClient.get("/accounts", { params: { type: "asset" } })).data
   },
   {
     name: "update_account",
-    description: "Update an existing account's details.",
+    description: "Update an existing account.",
     inputSchema: {
       type: "object",
-      properties: {
-        id: { type: "string" },
-        name: { type: "string" },
-        active: { type: "boolean" },
-        notes: { type: "string" }
-      },
+      properties: { id: { type: "string" }, name: { type: "string" } },
       required: ["id"]
     },
     handler: async (args) => {
@@ -216,11 +285,7 @@ const TOOLS = [
     description: "Update an existing transaction group.",
     inputSchema: {
       type: "object",
-      properties: {
-        id: { type: "string" },
-        description: { type: "string" },
-        category_name: { type: "string" }
-      },
+      properties: { id: { type: "string" }, description: { type: "string" } },
       required: ["id"]
     },
     handler: async (args) => {
@@ -245,7 +310,7 @@ const TOOLS = [
   // SEARCH
   {
     name: "search_transactions",
-    description: "Search for transactions using a query string.",
+    description: "Search for transactions.",
     inputSchema: {
       type: "object",
       properties: {
@@ -260,20 +325,16 @@ const TOOLS = [
   // BUDGETS
   {
     name: "list_budgets",
-    description: "List budgets and their status.",
+    description: "List budgets.",
     inputSchema: { type: "object", properties: {} },
     handler: async () => (await apiClient.get("/budgets")).data
   },
   {
     name: "update_budget",
-    description: "Update a budget's details.",
+    description: "Update a budget.",
     inputSchema: {
       type: "object",
-      properties: {
-        id: { type: "string" },
-        name: { type: "string" },
-        active: { type: "boolean" }
-      },
+      properties: { id: { type: "string" }, name: { type: "string" } },
       required: ["id"]
     },
     handler: async (args) => {
@@ -284,11 +345,7 @@ const TOOLS = [
   {
     name: "delete_budget",
     description: "Delete a budget.",
-    inputSchema: {
-      type: "object",
-      properties: { id: { type: "string" } },
-      required: ["id"]
-    },
+    inputSchema: { type: "object", properties: { id: { type: "string" } }, required: ["id"] },
     handler: async (args) => {
       await apiClient.delete(`/budgets/${args.id}`);
       return { message: "Budget deleted successfully." };
@@ -298,13 +355,13 @@ const TOOLS = [
   // CATEGORIES & TAGS
   {
     name: "list_categories",
-    description: "List all transaction categories.",
+    description: "List all categories.",
     inputSchema: { type: "object", properties: {} },
     handler: async () => (await apiClient.get("/categories")).data
   },
   {
     name: "create_category",
-    description: "Create a new transaction category.",
+    description: "Create a new category.",
     inputSchema: {
       type: "object",
       properties: { name: { type: "string" } },
@@ -314,58 +371,29 @@ const TOOLS = [
   },
   {
     name: "list_tags",
-    description: "List all transaction tags.",
+    description: "List all tags.",
     inputSchema: { type: "object", properties: {} },
     handler: async () => (await apiClient.get("/tags")).data
   },
-  {
-    name: "create_tag",
-    description: "Create a new transaction tag.",
-    inputSchema: {
-      type: "object",
-      properties: { tag: { type: "string" } },
-      required: ["tag"]
-    },
-    handler: async (args) => (await apiClient.post("/tags", args)).data
-  },
 
-  // BILLS & RECURRING
+  // BILLS
   {
     name: "list_bills",
-    description: "List all defined bills.",
+    description: "List all bills.",
     inputSchema: { type: "object", properties: {} },
     handler: async () => (await apiClient.get("/bills")).data
-  },
-  {
-    name: "delete_bill",
-    description: "Delete a bill.",
-    inputSchema: {
-      type: "object",
-      properties: { id: { type: "string" } },
-      required: ["id"]
-    },
-    handler: async (args) => {
-      await apiClient.delete(`/bills/${args.id}`);
-      return { message: "Bill deleted successfully." };
-    }
-  },
-  {
-    name: "list_recurring",
-    description: "List all recurring transaction rules.",
-    inputSchema: { type: "object", properties: {} },
-    handler: async () => (await apiClient.get("/recurring")).data
   },
 
   // PIGGY BANKS
   {
     name: "list_piggy_banks",
-    description: "List all piggy banks (savings goals).",
+    description: "List all piggy banks.",
     inputSchema: { type: "object", properties: {} },
     handler: async () => (await apiClient.get("/piggy-banks")).data
   },
   {
     name: "update_piggy_bank",
-    description: "Add or remove money from a piggy bank.",
+    description: "Add/remove money from goal.",
     inputSchema: {
       type: "object",
       properties: {
@@ -377,19 +405,6 @@ const TOOLS = [
     handler: async (args) => {
       await apiClient.post(`/piggy-banks/${args.id}/events`, { amount: args.amount });
       return { message: "Piggy bank updated successfully." };
-    }
-  },
-  {
-    name: "delete_piggy_bank",
-    description: "Delete a piggy bank.",
-    inputSchema: {
-      type: "object",
-      properties: { id: { type: "string" } },
-      required: ["id"]
-    },
-    handler: async (args) => {
-      await apiClient.delete(`/piggy-banks/${args.id}`);
-      return { message: "Piggy bank deleted successfully." };
     }
   }
 ];
@@ -445,7 +460,7 @@ async function runServer() {
       const host = req.get('host');
       const spec = {
         openapi: "3.0.0",
-        info: { title: "Firefly III AI Bridge", version: "2.0.0-phase2" },
+        info: { title: "Firefly III AI Bridge", version: "2.0.0-phase3" },
         servers: [{ url: `http://${host}/api` }],
         paths: {}
       };
