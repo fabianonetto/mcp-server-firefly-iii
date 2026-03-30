@@ -27,23 +27,59 @@ const apiClient = axios.create({
 
 // --- MCP Server Implementation ---
 const mcpServer = new Server(
-  { name: "mcp-server-firefly-iii", version: "1.4.0" },
+  { name: "mcp-server-firefly-iii", version: "2.0.0-phase1" },
   { capabilities: { tools: {} } }
 );
 
 const TOOLS = [
+  // SYSTEM
   {
     name: "get_about",
     description: "Get system information from Firefly III.",
     inputSchema: { type: "object", properties: {} },
     handler: async () => (await apiClient.get("/about")).data
   },
+
+  // ACCOUNTS
   {
     name: "list_accounts",
     description: "List all asset accounts and balances.",
     inputSchema: { type: "object", properties: {} },
     handler: async () => (await apiClient.get("/accounts", { params: { type: "asset" } })).data
   },
+  {
+    name: "update_account",
+    description: "Update an existing account's details.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        id: { type: "string", description: "The unique ID of the account." },
+        name: { type: "string" },
+        active: { type: "boolean" },
+        notes: { type: "string" }
+      },
+      required: ["id"]
+    },
+    handler: async (args) => {
+      const { id, ...data } = args;
+      return (await apiClient.put(`/accounts/${id}`, data)).data;
+    }
+  },
+  {
+    name: "delete_account",
+    description: "Permanently delete an account.",
+    inputSchema: {
+      type: "object",
+      properties: { id: { type: "string" } },
+      required: ["id"]
+    },
+    handler: async (args) => {
+      await apiClient.delete(`/accounts/${args.id}`);
+      return { message: "Account deleted successfully." };
+    }
+  },
+
+  // TRANSACTIONS
   {
     name: "list_transactions",
     description: "List recent transactions.",
@@ -80,11 +116,90 @@ const TOOLS = [
     }
   },
   {
+    name: "update_transaction",
+    description: "Update an existing transaction group.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        id: { type: "string", description: "The ID of the transaction group." },
+        description: { type: "string" },
+        category_name: { type: "string" }
+      },
+      required: ["id"]
+    },
+    handler: async (args) => {
+      const { id, ...data } = args;
+      return (await apiClient.put(`/transactions/${id}`, data)).data;
+    }
+  },
+  {
+    name: "delete_transaction",
+    description: "Permanently delete a transaction group.",
+    inputSchema: {
+      type: "object",
+      properties: { id: { type: "string" } },
+      required: ["id"]
+    },
+    handler: async (args) => {
+      await apiClient.delete(`/transactions/${args.id}`);
+      return { message: "Transaction deleted successfully." };
+    }
+  },
+
+  // SEARCH
+  {
+    name: "search_transactions",
+    description: "Search for transactions using a query string.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        query: { type: "string", description: "The search query (e.g., 'Starbucks')." },
+        limit: { type: "number", default: 10 }
+      },
+      required: ["query"]
+    },
+    handler: async (args) => (await apiClient.get("/search/transactions", { params: { query: args.query, limit: args.limit || 10 } })).data
+  },
+
+  // BUDGETS
+  {
     name: "list_budgets",
     description: "List budgets and their status.",
     inputSchema: { type: "object", properties: {} },
     handler: async () => (await apiClient.get("/budgets")).data
   },
+  {
+    name: "update_budget",
+    description: "Update a budget's details.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        id: { type: "string" },
+        name: { type: "string" },
+        active: { type: "boolean" }
+      },
+      required: ["id"]
+    },
+    handler: async (args) => {
+      const { id, ...data } = args;
+      return (await apiClient.put(`/budgets/${id}`, data)).data;
+    }
+  },
+  {
+    name: "delete_budget",
+    description: "Delete a budget.",
+    inputSchema: {
+      type: "object",
+      properties: { id: { type: "string" } },
+      required: ["id"]
+    },
+    handler: async (args) => {
+      await apiClient.delete(`/budgets/${args.id}`);
+      return { message: "Budget deleted successfully." };
+    }
+  },
+
+  // CATEGORIES & TAGS
   {
     name: "list_categories",
     description: "List all transaction categories.",
@@ -117,11 +232,26 @@ const TOOLS = [
     },
     handler: async (args) => (await apiClient.post("/tags", args)).data
   },
+
+  // BILLS & RECURRING
   {
     name: "list_bills",
-    description: "List all defined bills and their status.",
+    description: "List all defined bills.",
     inputSchema: { type: "object", properties: {} },
     handler: async () => (await apiClient.get("/bills")).data
+  },
+  {
+    name: "delete_bill",
+    description: "Delete a bill.",
+    inputSchema: {
+      type: "object",
+      properties: { id: { type: "string" } },
+      required: ["id"]
+    },
+    handler: async (args) => {
+      await apiClient.delete(`/bills/${args.id}`);
+      return { message: "Bill deleted successfully." };
+    }
   },
   {
     name: "list_recurring",
@@ -129,19 +259,8 @@ const TOOLS = [
     inputSchema: { type: "object", properties: {} },
     handler: async () => (await apiClient.get("/recurring")).data
   },
-  {
-    name: "search_transactions",
-    description: "Search for transactions using a query string.",
-    inputSchema: {
-      type: "object",
-      properties: {
-        query: { type: "string", description: "The search query (e.g., 'Starbucks', 'category:Food')." },
-        limit: { type: "number", default: 10 }
-      },
-      required: ["query"]
-    },
-    handler: async (args) => (await apiClient.get("/search/transactions", { params: { query: args.query, limit: args.limit || 10 } })).data
-  },
+
+  // PIGGY BANKS
   {
     name: "list_piggy_banks",
     description: "List all piggy banks (savings goals).",
@@ -154,15 +273,27 @@ const TOOLS = [
     inputSchema: {
       type: "object",
       properties: {
-        id: { type: "string", description: "The ID of the piggy bank." },
-        amount: { type: "string", description: "The amount to add (positive) or remove (negative)." }
+        id: { type: "string" },
+        amount: { type: "string" }
       },
       required: ["id", "amount"]
     },
     handler: async (args) => {
-      const payload = { amount: args.amount };
-      await apiClient.post(`/piggy-banks/${args.id}/events`, payload);
+      await apiClient.post(`/piggy-banks/${args.id}/events`, { amount: args.amount });
       return { message: "Piggy bank updated successfully." };
+    }
+  },
+  {
+    name: "delete_piggy_bank",
+    description: "Delete a piggy bank.",
+    inputSchema: {
+      type: "object",
+      properties: { id: { type: "string" } },
+      required: ["id"]
+    },
+    handler: async (args) => {
+      await apiClient.delete(`/piggy-banks/${args.id}`);
+      return { message: "Piggy bank deleted successfully." };
     }
   }
 ];
@@ -194,7 +325,6 @@ async function runServer() {
     const app = express();
     app.use(express.json());
 
-    // 1. MCP over SSE
     let transport;
     app.get("/sse", async (req, res) => {
       transport = new SSEServerTransport("/messages", res);
@@ -204,7 +334,6 @@ async function runServer() {
       if (transport) await transport.handlePostMessage(req, res);
     });
 
-    // 2. Standard REST API (for ChatGPT Actions)
     TOOLS.forEach(tool => {
       app.all(`/api/${tool.name}`, async (req, res) => {
         try {
@@ -216,12 +345,11 @@ async function runServer() {
       });
     });
 
-    // 3. OpenAPI Spec for ChatGPT
     app.get("/openapi.json", (req, res) => {
       const host = req.get('host');
       const spec = {
         openapi: "3.0.0",
-        info: { title: "Firefly III AI Bridge", version: "1.4.0" },
+        info: { title: "Firefly III AI Bridge", version: "2.0.0-phase1" },
         servers: [{ url: `http://${host}/api` }],
         paths: {}
       };
@@ -240,11 +368,8 @@ async function runServer() {
 
     app.listen(PORT, () => {
       console.error(`Universal AI Bridge running at http://localhost:${PORT}`);
-      console.error(`- MCP (SSE): http://localhost:${PORT}/sse`);
-      console.error(`- OpenAPI: http://localhost:${PORT}/openapi.json`);
     });
   } else {
-    // Fallback to Stdio for Gemini/Local CLI
     const transport = new StdioServerTransport();
     await mcpServer.connect(transport);
     console.error("Firefly III MCP Server running on stdio");

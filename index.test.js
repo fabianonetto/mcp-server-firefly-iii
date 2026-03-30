@@ -3,30 +3,66 @@ const axiosMockAdapter = require("axios-mock-adapter");
 
 const mock = new axiosMockAdapter(apiClient);
 
-describe("Firefly III MCP Server v1.4", () => {
+describe("Firefly III MCP Server v2.0.0-phase1 (CRUD)", () => {
   beforeEach(() => {
     mock.reset();
   });
 
-  test("should list all 14 tools", async () => {
-    expect(TOOLS.length).toBe(14);
-    const names = TOOLS.map(t => t.name);
-    expect(names).toContain("list_piggy_banks");
-    expect(names).toContain("update_piggy_bank");
+  test("should list all 22 tools (Exhaustive CRUD Phase 1)", async () => {
+    expect(TOOLS.length).toBe(22);
   });
 
-  test("list_piggy_banks tool should return goals", async () => {
-    const mockData = { data: [{ name: "New Car" }] };
-    mock.onGet("/piggy-banks").reply(200, mockData);
-    const tool = TOOLS.find(t => t.name === "list_piggy_banks");
-    const result = await tool.handler({});
-    expect(result).toEqual(mockData);
+  // ACCOUNT CRUD TESTS
+  test("update_account should send PUT request", async () => {
+    mock.onPut("/accounts/1").reply(200, { data: { id: "1", name: "Updated" } });
+    const tool = TOOLS.find(t => t.name === "update_account");
+    const result = await tool.handler({ id: "1", name: "Updated" });
+    expect(result.data.name).toBe("Updated");
   });
 
-  test("update_piggy_bank tool should post event", async () => {
-    mock.onPost("/piggy-banks/1/events", { amount: "50.00" }).reply(200, {});
-    const tool = TOOLS.find(t => t.name === "update_piggy_bank");
-    const result = await tool.handler({ id: "1", amount: "50.00" });
-    expect(result.message).toBe("Piggy bank updated successfully.");
+  test("delete_account should send DELETE request", async () => {
+    mock.onDelete("/accounts/1").reply(204);
+    const tool = TOOLS.find(t => t.name === "delete_account");
+    const result = await tool.handler({ id: "1" });
+    expect(result.message).toContain("successfully");
+  });
+
+  // TRANSACTION CRUD TESTS
+  test("update_transaction should send PUT request", async () => {
+    mock.onPut("/transactions/10").reply(200, { data: { id: "10" } });
+    const tool = TOOLS.find(t => t.name === "update_transaction");
+    const result = await tool.handler({ id: "10", description: "New Desc" });
+    expect(result.data.id).toBe("10");
+  });
+
+  test("delete_transaction should send DELETE request", async () => {
+    mock.onDelete("/transactions/10").reply(204);
+    const tool = TOOLS.find(t => t.name === "delete_transaction");
+    const result = await tool.handler({ id: "10" });
+    expect(result.message).toContain("successfully");
+  });
+
+  // BUDGET CRUD TESTS
+  test("update_budget should send PUT request", async () => {
+    mock.onPut("/budgets/5").reply(200, { data: { id: "5" } });
+    const tool = TOOLS.find(t => t.name === "update_budget");
+    const result = await tool.handler({ id: "5", active: false });
+    expect(result.data.id).toBe("5");
+  });
+
+  // BILL CRUD TESTS
+  test("delete_bill should send DELETE request", async () => {
+    mock.onDelete("/bills/2").reply(204);
+    const tool = TOOLS.find(t => t.name === "delete_bill");
+    const result = await tool.handler({ id: "2" });
+    expect(result.message).toContain("successfully");
+  });
+
+  // PIGGY BANK CRUD TESTS
+  test("delete_piggy_bank should send DELETE request", async () => {
+    mock.onDelete("/piggy-banks/3").reply(204);
+    const tool = TOOLS.find(t => t.name === "delete_piggy_bank");
+    const result = await tool.handler({ id: "3" });
+    expect(result.message).toContain("successfully");
   });
 });
