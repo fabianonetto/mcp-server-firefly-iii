@@ -16,6 +16,7 @@ All future work on this project MUST adhere to the following:
 2.  **Documentation Synchronization**: Every code change includes an update of all Markdown files.
 3.  **Maximum Information Density**: Commit and issue messages must contain implementation and testing details.
 4.  **Privacy First**: NEVER commit local paths or environment-specific details.
+5.  **Strategic Analysis**: Use the `codebase_investigator` sub-agent for all architectural mapping, deep investigations, and system-wide feature planning to ensure technical integrity.
 
 ## 🗺️ Product Roadmap: Pushing to v3.0
 - [x] **v1.x Foundations** (14 Tools)

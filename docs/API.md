@@ -1,21 +1,32 @@
-# Firefly III MCP Tool Reference (v3.0.0-phase1)
+# Firefly III MCP Tool Reference (v3.0.0-phase2)
 
-This document provides a definitive list of all 55 tools available in the Firefly III AI Bridge.
+This document provides a definitive list of all tools available in the Firefly III AI Bridge.
 
 ## 🛠️ Tool Registry
 
 ### 🏗️ System
 - `get_about`: Connection and version details.
 
-### 🔗 Transaction Linking (New in v3.0)
-- `list_link_types`: List available link relationships (reimbursement, etc.).
+### 🔗 Transaction Linking (v3.0)
+- `list_link_types`: List available link relationships.
 - `link_transactions`: Create a logical link between two transaction journals.
 - `list_transaction_links`: View links for a specific transaction.
 
-### 📉 Budget Limits (New in v3.0)
+### 📉 Budget Limits (v3.0)
 - `list_budget_limits`: View monetary limits for specific periods.
 - `create_budget_limit`: Set a new limit for a budget.
 - `delete_budget_limit`: Remove a period limit.
+
+### 📁 Object Groups (New in v3.0 Phase 2)
+- `list_object_groups`: View groups used for organizing accounts/piggy banks.
+- `create_object_group`: Group resources for better AI organization.
+
+### 🔄 Recurring Transactions (New in v3.0 Phase 2)
+- `list_recurring`: Review all automated transaction rules.
+- `get_recurring`: Get details for a specific recurrence.
+- `create_recurring`: Set up new automated transaction rules.
+- `update_recurring`: Modify recurrence properties.
+- `delete_recurring`: Stop an automated recurrence.
 
 ### 💰 Accounts
 - `list_accounts`: Search and list all accounts by type.
@@ -41,11 +52,10 @@ This document provides a definitive list of all 55 tools available in the Firefl
 - `list_categories` / `create_category`: Category management.
 - `list_tags` / `create_tag`: Labeling and organization.
 
-### 📅 Bills & Recurring
+### 📅 Bills
 - `list_bills`: Track upcoming obligations.
 - `create_bill`: Define a new regular bill.
 - `delete_bill`: Stop tracking a bill.
-- `list_recurring`: Review automated transaction rules.
 
 ### 🐷 Savings (Piggy Banks)
 - `list_piggy_banks`: View all savings goals.
