@@ -74,7 +74,7 @@ We are moving beyond the MVP to support 100% of Firefly III capabilities.
 
 - [x] **v1.x Foundations** (14 Core Tools)
 - [x] [**V2 Phase 1: Full Lifecycle (CRUD)**](https://github.com/fabianonetto/mcp-server-firefly-iii/issues/5) (v2.0.0-phase1)
-- [ ] [**V2 Phase 2: Currencies & Metadata**](https://github.com/fabianonetto/mcp-server-firefly-iii/issues/6): Multi-currency support.
+- [ ] [**V2 Phase 2: Currencies & Metadata**](https://github.com/fabianonetto/mcp-server-firefly-iii/issues/6) (In Progress)
 - [ ] [**V2 Phase 3: Automation & Rules**](https://github.com/fabianonetto/mcp-server-firefly-iii/issues/7): Trigger system logic.
 - [ ] [**V2 Phase 4: Attachments & Insights**](https://github.com/fabianonetto/mcp-server-firefly-iii/issues/8): Receipts and advanced reports.
 
