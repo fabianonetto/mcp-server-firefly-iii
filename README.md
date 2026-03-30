@@ -1,10 +1,10 @@
-# Universal Firefly III AI Bridge (v2.0.0)
+# Universal Firefly III AI Bridge (v3.0.0)
 
 A professional-grade, AI-agnostic bridge that provides 100% API coverage for connecting your AI assistants to your [Firefly III](https://github.com/firefly-iii/firefly-iii) personal finance instance.
 
 ## 🚀 One Bridge, All AIs
 
-This server exposes **47 Tools** to any AI platform supporting standard protocols.
+This server exposes **55 Tools** to any AI platform supporting standard protocols.
 
 | AI Platform | Protocol Used | Connection Type |
 | :--- | :--- | :--- |
