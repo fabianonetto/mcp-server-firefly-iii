@@ -75,7 +75,7 @@ We are working towards a full-fledged Firefly III integration. Check out our [v1
 - [x] [Categories & Tags Management](https://github.com/fabianonetto/mcp-server-firefly-iii/issues/1) (v1.1.0)
 - [x] [Bills & Recurring Transactions](https://github.com/fabianonetto/mcp-server-firefly-iii/issues/2) (v1.2.0)
 - [x] [Advanced Search Tool](https://github.com/fabianonetto/mcp-server-firefly-iii/issues/3) (v1.3.0)
-- [ ] [Piggy Banks Integration](https://github.com/fabianonetto/mcp-server-firefly-iii/issues/4) (v1.4.0)
+- [x] [Piggy Banks Integration](https://github.com/fabianonetto/mcp-server-firefly-iii/issues/4) (v1.4.0)
 
 ## ✨ Created with Gemini CLI
 This project was built using **Gemini CLI vibecoding**. Feedback and contributions are always welcome!
