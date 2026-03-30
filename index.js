@@ -27,7 +27,7 @@ const apiClient = axios.create({
 
 // --- MCP Server Implementation ---
 const mcpServer = new Server(
-  { name: "mcp-server-firefly-iii", version: "1.1.0" },
+  { name: "mcp-server-firefly-iii", version: "1.2.0" },
   { capabilities: { tools: {} } }
 );
 
@@ -65,7 +65,7 @@ const TOOLS = [
         source_name: { type: "string" },
         destination_name: { type: "string" },
         category_name: { type: "string" },
-        tags: { type: "array", items: { type: "string" }, description: "Array of tag names." },
+        tags: { type: "array", items: { type: "string" } },
         date: { type: "string" }
       },
       required: ["type", "amount", "description", "source_name", "destination_name"]
@@ -96,9 +96,7 @@ const TOOLS = [
     description: "Create a new transaction category.",
     inputSchema: {
       type: "object",
-      properties: {
-        name: { type: "string", description: "The name of the category." }
-      },
+      properties: { name: { type: "string" } },
       required: ["name"]
     },
     handler: async (args) => (await apiClient.post("/categories", args)).data
@@ -114,12 +112,22 @@ const TOOLS = [
     description: "Create a new transaction tag.",
     inputSchema: {
       type: "object",
-      properties: {
-        tag: { type: "string", description: "The tag name." }
-      },
+      properties: { tag: { type: "string" } },
       required: ["tag"]
     },
     handler: async (args) => (await apiClient.post("/tags", args)).data
+  },
+  {
+    name: "list_bills",
+    description: "List all defined bills and their status.",
+    inputSchema: { type: "object", properties: {} },
+    handler: async () => (await apiClient.get("/bills")).data
+  },
+  {
+    name: "list_recurring",
+    description: "List all recurring transaction rules.",
+    inputSchema: { type: "object", properties: {} },
+    handler: async () => (await apiClient.get("/recurring")).data
   }
 ];
 
@@ -177,7 +185,7 @@ async function runServer() {
       const host = req.get('host');
       const spec = {
         openapi: "3.0.0",
-        info: { title: "Firefly III AI Bridge", version: "1.1.0" },
+        info: { title: "Firefly III AI Bridge", version: "1.2.0" },
         servers: [{ url: `http://${host}/api` }],
         paths: {}
       };
