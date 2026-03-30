@@ -1,4 +1,4 @@
-# Firefly III MCP Tool Reference (v2.0.0-phase1)
+# Firefly III MCP Tool Reference (v2.0.0-phase2)
 
 This document provides a detailed reference for all tools available in the Firefly III MCP Server.
 
@@ -8,10 +8,44 @@ This document provides a detailed reference for all tools available in the Firef
 - **`get_about`**: Get basic information and versioning from your Firefly III instance.
     - *Input*: None
 
+### Currencies
+- **`list_currencies`**: Retrieves all currencies defined in the system.
+    - *Input*: None
+- **`get_currency`**: Get a single currency by code.
+    - *Input Schema*:
+        - `code` (string): The currency code (e.g., USD).
+- **`create_currency`**: Store a new currency.
+    - *Input Schema*:
+        - `name` (string)
+        - `code` (string)
+        - `symbol` (string)
+        - `decimal_places` (number)
+- **`update_currency`**: Update an existing currency.
+    - *Input Schema*:
+        - `code` (string): The current code.
+        - `name` (string, optional)
+        - `symbol` (string, optional)
+        - `enabled` (boolean, optional)
+        - `default` (boolean, optional)
+- **`delete_currency`**: Delete a currency.
+    - *Input Schema*:
+        - `code` (string)
+
+### Preferences
+- **`list_preferences`**: List all user preferences.
+    - *Input*: None
+- **`get_preference`**: Get a specific preference by name.
+    - *Input Schema*:
+        - `name` (string)
+- **`update_preference`**: Update a specific preference.
+    - *Input Schema*:
+        - `name` (string)
+        - `data` (string): The new value.
+
 ### Accounts
 - **`list_accounts`**: Retrieves all **Asset Accounts** and their current balances.
     - *Input*: None
-- **`update_account`**: Update an existing account's details (name, active status, notes).
+- **`update_account`**: Update an existing account's details.
     - *Input Schema*:
         - `id` (string): Unique account ID.
         - `name` (string, optional)
@@ -93,3 +127,4 @@ This document provides a detailed reference for all tools available in the Firef
 - **`delete_piggy_bank`**: Delete a piggy bank.
     - *Input Schema*:
         - `id` (string): The unique ID of the piggy bank.
+ Greenland
