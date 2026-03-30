@@ -4,24 +4,24 @@ This project is a professional-grade, AI-agnostic bridge connecting [Firefly III
 
 ## 🚀 Accomplishments
 - **AI-Agnostic Core**: Supports MCP (stdio/SSE) and OpenAPI.
-- **Comprehensive Toolset (v1.4.0)**: 14 tools covering Accounts, Transactions, Categories, Tags, Bills, Recurring rules, Search, and Piggy Banks.
+- **Comprehensive Toolset (v2.0.0-phase3)**: 34 tools covering Accounts, Transactions, Categories, Tags, Bills, Recurring, Search, Piggy Banks, Rules, and Webhooks.
 - **Automated Testing**: Robust suite using Jest and axios-mock-adapter.
-- **Professional DevOps**: Clean history, Conventional Commits, and GitHub Roadmap (Phase 1 100% Complete).
-- **User Support**: Comprehensive Prompt Gallery created in `docs/PROMPTS.md`.
+- **Professional DevOps**: Clean history, Conventional Commits, and Detailed Technical Retrospectives on GitHub.
 
 ## 📜 Process & Documentation Standards
 All future work on this project MUST adhere to the following:
 1.  **Conventional Commits**: Use prefixes like `Feat:`, `Fix:`, `Docs:`, `Chore:`, and `Refactor:`.
-2.  **Tool Reference**: Every time a tool is added or modified, `docs/API.md` MUST be updated.
-3.  **Testing Standards**: Every new feature must include unit tests in `index.test.js`.
-4.  **Issue Management**: Link all commits to the corresponding V2 roadmap issues.
+2.  **Documentation Synchronization**: Every code change MUST be accompanied by an audit and update of ALL relevant `.md` files (README, API, PROMPTS, etc.).
+3.  **Tool Reference**: `docs/API.md` MUST be kept exhaustive.
+4.  **Prompt Gallery**: `docs/PROMPTS.md` MUST be updated with new examples for new tools.
+5.  **Testing Standards**: Every new feature must include unit tests in `index.test.js`.
 
 ## 🗺️ Product Roadmap (V2.0 - Exhaustive API Integration)
-- [x] **v1.x Foundations** (14 Initial Tools)
-- [ ] **V2 Phase 1: Full Lifecycle Management (CRUD)** - Add Update/Delete for all resources.
-- [ ] **V2 Phase 2: Currencies & System Metadata** - Support for multiple currencies and preferences.
-- [ ] **V2 Phase 3: Automation, Rules & Webhooks** - Trigger and manage system logic.
-- [ ] **V2 Phase 4: Attachments & Advanced Insight Tools** - Support for receipts and pre-calculated reports.
+- [x] **v1.x Foundations** (14 Core Tools)
+- [x] **V2 Phase 1: Full Lifecycle (CRUD)** (v2.0.0-phase1)
+- [x] **V2 Phase 2: Currencies & Metadata** (v2.0.0-phase2)
+- [x] **V2 Phase 3: Automation & Rules** (v2.0.0-phase3)
+- [ ] **V2 Phase 4: Attachments & Advanced Insight Tools** (v2.0.0-phase4)
 
 ## 🛠️ Global Setup Instructions
 ```powershell

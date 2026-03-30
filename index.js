@@ -27,7 +27,7 @@ const apiClient = axios.create({
 
 // --- MCP Server Implementation ---
 const mcpServer = new Server(
-  { name: "mcp-server-firefly-iii", version: "2.0.0-phase3" },
+  { name: "mcp-server-firefly-iii", version: "2.0.0-phase4" },
   { capabilities: { tools: {} } }
 );
 
@@ -38,6 +38,59 @@ const TOOLS = [
     description: "Get system information from Firefly III.",
     inputSchema: { type: "object", properties: {} },
     handler: async () => (await apiClient.get("/about")).data
+  },
+
+  // ATTACHMENTS
+  {
+    name: "list_attachments",
+    description: "List all files uploaded to Firefly III.",
+    inputSchema: { type: "object", properties: {} },
+    handler: async () => (await apiClient.get("/attachments")).data
+  },
+  {
+    name: "get_attachment",
+    description: "Get metadata for a single attachment by ID.",
+    inputSchema: { type: "object", properties: { id: { type: "string" } }, required: ["id"] },
+    handler: async (args) => (await apiClient.get(`/attachments/${args.id}`)).data
+  },
+  {
+    name: "upload_attachment",
+    description: "Upload a new file (base64 encoded) to Firefly III.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        filename: { type: "string" },
+        attachable_type: { type: "string", enum: ["Account", "TransactionJournal"] },
+        attachable_id: { type: "string" },
+        content: { type: "string", description: "Base64 encoded file content." }
+      },
+      required: ["filename", "attachable_type", "attachable_id", "content"]
+    },
+    handler: async (args) => (await apiClient.post("/attachments", args)).data
+  },
+  {
+    name: "delete_attachment",
+    description: "Delete an attachment.",
+    inputSchema: { type: "object", properties: { id: { type: "string" } }, required: ["id"] },
+    handler: async (args) => {
+      await apiClient.delete(`/attachments/${args.id}`);
+      return { message: "Attachment deleted successfully." };
+    }
+  },
+
+  // CHARTS & INSIGHTS
+  {
+    name: "get_account_overview_chart",
+    description: "Get pre-calculated chart data for account balances.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        start: { type: "string", description: "ISO 8601 date (YYYY-MM-DD)" },
+        end: { type: "string", description: "ISO 8601 date (YYYY-MM-DD)" }
+      },
+      required: ["start", "end"]
+    },
+    handler: async (args) => (await apiClient.get("/charts/account/overview", { params: args })).data
   },
 
   // RULES & AUTOMATION
@@ -61,8 +114,7 @@ const TOOLS = [
       properties: {
         title: { type: "string" },
         trigger: { type: "string", enum: ["store-journal", "update-journal"] },
-        rule_group_id: { type: "string" },
-        active: { type: "boolean", default: true }
+        rule_group_id: { type: "string" }
       },
       required: ["title", "trigger", "rule_group_id"]
     },
@@ -73,11 +125,7 @@ const TOOLS = [
     description: "Update an existing automation rule.",
     inputSchema: {
       type: "object",
-      properties: {
-        id: { type: "string" },
-        title: { type: "string" },
-        active: { type: "boolean" }
-      },
+      properties: { id: { type: "string" }, title: { type: "string" } },
       required: ["id"]
     },
     handler: async (args) => {
@@ -88,11 +136,7 @@ const TOOLS = [
   {
     name: "delete_rule",
     description: "Delete an automation rule.",
-    inputSchema: {
-      type: "object",
-      properties: { id: { type: "string" } },
-      required: ["id"]
-    },
+    inputSchema: { type: "object", properties: { id: { type: "string" } }, required: ["id"] },
     handler: async (args) => {
       await apiClient.delete(`/rules/${args.id}`);
       return { message: "Rule deleted successfully." };
@@ -113,11 +157,7 @@ const TOOLS = [
   {
     name: "trigger_rule_group",
     description: "Manually trigger all rules in a group.",
-    inputSchema: {
-      type: "object",
-      properties: { id: { type: "string" } },
-      required: ["id"]
-    },
+    inputSchema: { type: "object", properties: { id: { type: "string" } }, required: ["id"] },
     handler: async (args) => {
       await apiClient.post(`/rule-groups/${args.id}/trigger`);
       return { message: "Rule group triggered successfully." };
@@ -148,11 +188,7 @@ const TOOLS = [
   {
     name: "delete_webhook",
     description: "Delete a webhook.",
-    inputSchema: {
-      type: "object",
-      properties: { id: { type: "string" } },
-      required: ["id"]
-    },
+    inputSchema: { type: "object", properties: { id: { type: "string" } }, required: ["id"] },
     handler: async (args) => {
       await apiClient.delete(`/webhooks/${args.id}`);
       return { message: "Webhook deleted successfully." };
@@ -233,11 +269,7 @@ const TOOLS = [
   {
     name: "delete_account",
     description: "Permanently delete an account.",
-    inputSchema: {
-      type: "object",
-      properties: { id: { type: "string" } },
-      required: ["id"]
-    },
+    inputSchema: { type: "object", properties: { id: { type: "string" } }, required: ["id"] },
     handler: async (args) => {
       await apiClient.delete(`/accounts/${args.id}`);
       return { message: "Account deleted successfully." };
@@ -296,11 +328,7 @@ const TOOLS = [
   {
     name: "delete_transaction",
     description: "Permanently delete a transaction group.",
-    inputSchema: {
-      type: "object",
-      properties: { id: { type: "string" } },
-      required: ["id"]
-    },
+    inputSchema: { type: "object", properties: { id: { type: "string" } }, required: ["id"] },
     handler: async (args) => {
       await apiClient.delete(`/transactions/${args.id}`);
       return { message: "Transaction deleted successfully." };
@@ -460,7 +488,7 @@ async function runServer() {
       const host = req.get('host');
       const spec = {
         openapi: "3.0.0",
-        info: { title: "Firefly III AI Bridge", version: "2.0.0-phase3" },
+        info: { title: "Firefly III AI Bridge", version: "2.0.0-phase4" },
         servers: [{ url: `http://${host}/api` }],
         paths: {}
       };

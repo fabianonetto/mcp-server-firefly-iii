@@ -1,4 +1,4 @@
-# Firefly III MCP Tool Reference (v2.0.0-phase3)
+# Firefly III MCP Tool Reference (v2.0.0-phase4)
 
 This document provides a detailed reference for all tools available in the Firefly III MCP Server.
 
@@ -7,8 +7,25 @@ This document provides a detailed reference for all tools available in the Firef
 ### System
 - **`get_about`**: Get basic information and versioning from your Firefly III instance.
 
+### Attachments
+- **`list_attachments`**: Retrieves a list of all files uploaded to Firefly III.
+- **`get_attachment`**: Get metadata for a specific attachment by ID.
+- **`upload_attachment`**: Upload a new file (base64 encoded) to Firefly III.
+    - *Input Schema*:
+        - `filename` (string)
+        - `attachable_type` (string): Either `Account` or `TransactionJournal`.
+        - `attachable_id` (string): The ID of the parent resource.
+        - `content` (string): Base64 string of the file.
+- **`delete_attachment`**: Delete an attachment by ID.
+
+### Charts & Insights
+- **`get_account_overview_chart`**: Get pre-calculated balance trends for a date range.
+    - *Input Schema*:
+        - `start` (string): YYYY-MM-DD
+        - `end` (string): YYYY-MM-DD
+
 ### Rules & Automation
-- **`list_rules`**: Retrieves all automation rules defined in the system.
+- **`list_rules`**: Retrieves all automation rules.
 - **`get_rule`**: Get a single rule by ID.
 - **`create_rule`**: Store a new automation rule.
 - **`update_rule`**: Update an existing automation rule.
@@ -19,12 +36,12 @@ This document provides a detailed reference for all tools available in the Firef
 
 ### Webhooks
 - **`list_webhooks`**: List all registered external webhooks.
-- **`create_webhook`**: Create a new webhook for external notifications.
+- **`create_webhook`**: Create a new webhook.
 - **`delete_webhook`**: Delete a webhook.
 
 ### Currencies
-- **`list_currencies`**: Retrieves all currencies defined in the system.
-- **`update_currency`**: Update an existing currency (enable/disable).
+- **`list_currencies`**: Retrieves all currencies.
+- **`update_currency`**: Update an existing currency.
 
 ### Preferences
 - **`list_preferences`**: List all user preferences.
@@ -32,36 +49,35 @@ This document provides a detailed reference for all tools available in the Firef
 - **`update_preference`**: Update a specific preference value.
 
 ### Accounts
-- **`list_accounts`**: Retrieves all **Asset Accounts** and their balances.
-- **`update_account`**: Update an existing account's details.
+- **`list_accounts`**: Retrieves all Asset Accounts.
+- **`update_account`**: Update account details.
 - **`delete_account`**: Permanently delete an account.
 
 ### Transactions
 - **`list_transactions`**: Fetches a list of recent transactions.
 - **`create_transaction`**: Records a new financial activity.
-- **`update_transaction`**: Update an existing transaction description.
+- **`update_transaction`**: Update an existing transaction.
 - **`delete_transaction`**: Permanently delete a transaction group.
 
 ### Search
-- **`search_transactions`**: Search for transactions using a query string.
+- **`search_transactions`**: Search using query strings.
 
 ### Budgets
-- **`list_budgets`**: Lists active budgets and their status.
-- **`update_budget`**: Update a budget's name or status.
+- **`list_budgets`**: Lists active budgets.
+- **`update_budget`**: Update a budget.
 - **`delete_budget`**: Delete a budget.
 
 ### Categories & Tags
-- **`list_categories`**: Lists all transaction categories.
-- **`create_category`**: Creates a new category.
-- **`list_tags`**: Lists all transaction tags.
-- **`create_tag`**: Creates a new tag.
+- **`list_categories`**: List all categories.
+- **`create_category`**: Create a new category.
+- **`list_tags`**: List all tags.
+- **`create_tag`**: Create a new tag.
 
-### Bills & Recurring
-- **`list_bills`**: Retrieves a list of all defined bills.
+### Bills
+- **`list_bills`**: Retrieves all bills.
 - **`delete_bill`**: Delete a specific bill.
-- **`list_recurring`**: Lists all recurring transaction rules.
 
 ### Savings (Piggy Banks)
-- **`list_piggy_banks`**: Lists all savings goals and their progress.
-- **`update_piggy_bank`**: Adds or removes money from a specific piggy bank.
+- **`list_piggy_banks`**: Lists all savings goals.
+- **`update_piggy_bank`**: Add or remove money from a piggy bank.
 - **`delete_piggy_bank`**: Delete a piggy bank.

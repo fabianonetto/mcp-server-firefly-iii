@@ -27,16 +27,21 @@ This guide provides example prompts you can use to interact with your Firefly II
 - *"How much did I spend at 'Starbucks' in total last month?"*
 - *"Show me all transactions tagged as 'Vacation'."*
 
+## 🧠 Automation & Rules
+- *"List all my automation rules."*
+- *"Run my 'Monthly Cleanup' rule group against my transactions."*
+- *"Trigger the 'Auto-Categorization' rules."*
+
+## 📁 Attachments & Insights
+- *"Show me all files I've uploaded to Firefly III."*
+- *"Give me a summary of my account balance trends for the last 30 days."* (Uses `get_account_overview_chart`)
+- *"Check for any attachments linked to my last transaction."*
+
 ## 🏷️ Organization
 - *"List all my transaction categories."*
 - *"Create a new category called 'Tech Subscriptions'."*
 - *"What are my most used tags?"*
 - *"Create a new tag called 'Tax Deductible'."*
-
-## 📅 Bills & Recurring
-- *"Do I have any bills due this week?"*
-- *"List all my recurring transaction rules."*
-- *"What is the status of my 'Rent' bill?"*
 
 ---
 **Tip**: When creating transactions, you can be specific or conversational. For example: *"I spent 5 bucks on a coffee at Dunkin"* will be translated into a withdrawal from your default wallet to a destination called 'Dunkin'.
