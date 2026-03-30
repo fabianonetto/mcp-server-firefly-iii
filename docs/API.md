@@ -16,6 +16,10 @@ This document provides a detailed reference for all tools available in the Firef
 - **`list_transactions`**: Fetches a list of recent transactions.
     - *Input Schema*:
         - `limit` (number, default: 10): Number of transactions to retrieve.
+- **`search_transactions`**: Search for specific transactions using a query string.
+    - *Input Schema*:
+        - `query` (string): The search query (e.g., "Starbucks", "category:Food").
+        - `limit` (number, optional): Max results to return.
 - **`create_transaction`**: Records a new financial activity.
     - *Input Schema*:
         - `type` (string, enum: `withdrawal`, `deposit`, `transfer`): The transaction type.

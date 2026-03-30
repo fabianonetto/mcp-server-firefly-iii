@@ -27,7 +27,7 @@ const apiClient = axios.create({
 
 // --- MCP Server Implementation ---
 const mcpServer = new Server(
-  { name: "mcp-server-firefly-iii", version: "1.2.0" },
+  { name: "mcp-server-firefly-iii", version: "1.3.0" },
   { capabilities: { tools: {} } }
 );
 
@@ -128,6 +128,19 @@ const TOOLS = [
     description: "List all recurring transaction rules.",
     inputSchema: { type: "object", properties: {} },
     handler: async () => (await apiClient.get("/recurring")).data
+  },
+  {
+    name: "search_transactions",
+    description: "Search for transactions using a query string.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        query: { type: "string", description: "The search query (e.g., 'Starbucks', 'category:Food')." },
+        limit: { type: "number", default: 10 }
+      },
+      required: ["query"]
+    },
+    handler: async (args) => (await apiClient.get("/search/transactions", { params: { query: args.query, limit: args.limit || 10 } })).data
   }
 ];
 
@@ -185,7 +198,7 @@ async function runServer() {
       const host = req.get('host');
       const spec = {
         openapi: "3.0.0",
-        info: { title: "Firefly III AI Bridge", version: "1.2.0" },
+        info: { title: "Firefly III AI Bridge", version: "1.3.0" },
         servers: [{ url: `http://${host}/api` }],
         paths: {}
       };

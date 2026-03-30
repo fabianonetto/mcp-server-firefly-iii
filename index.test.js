@@ -3,31 +3,22 @@ const axiosMockAdapter = require("axios-mock-adapter");
 
 const mock = new axiosMockAdapter(apiClient);
 
-describe("Firefly III MCP Server v1.2", () => {
+describe("Firefly III MCP Server v1.3", () => {
   beforeEach(() => {
     mock.reset();
   });
 
-  test("should list all 11 tools (v1.1 + Bills/Recurring)", async () => {
-    expect(TOOLS.length).toBe(11);
-    const names = TOOLS.map(t => t.name);
-    expect(names).toContain("list_bills");
-    expect(names).toContain("list_recurring");
+  test("should list all 12 tools", async () => {
+    expect(TOOLS.length).toBe(12);
+    expect(TOOLS.map(t => t.name)).toContain("search_transactions");
   });
 
-  test("list_bills tool should return bills", async () => {
-    const mockData = { data: [{ name: "Rent" }] };
-    mock.onGet("/bills").reply(200, mockData);
-    const tool = TOOLS.find(t => t.name === "list_bills");
-    const result = await tool.handler({});
-    expect(result).toEqual(mockData);
-  });
-
-  test("list_recurring tool should return recurring rules", async () => {
-    const mockData = { data: [{ name: "Salary" }] };
-    mock.onGet("/recurring").reply(200, mockData);
-    const tool = TOOLS.find(t => t.name === "list_recurring");
-    const result = await tool.handler({});
+  test("search_transactions tool should return search results", async () => {
+    const mockData = { data: [{ description: "Starbucks" }] };
+    mock.onGet("/search/transactions", { params: { query: "Starbucks", limit: 10 } }).reply(200, mockData);
+    
+    const tool = TOOLS.find(t => t.name === "search_transactions");
+    const result = await tool.handler({ query: "Starbucks" });
     expect(result).toEqual(mockData);
   });
 });
