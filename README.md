@@ -25,12 +25,14 @@ This server exposes **47 Tools** to any AI platform supporting standard protocol
 - [**Testing Guide (TESTING.md)**](docs/TESTING.md): How to run and write automated tests.
 - [**Gemini Manifest (gemini.md)**](gemini.md): Instructions for Gemini Agents.
 
-## 🗺️ Roadmap Status: 100% Complete
+## 🗺️ Roadmap (Pushing to v3.0 - Power User Capabilities)
+Moving beyond basic CRUD to advanced logic and data mastery.
+
 - [x] **v1.x Foundations** (Initial Connectivity)
-- [x] **V2 Phase 1: Full Lifecycle (CRUD)** (Complete Admin Access)
-- [x] **V2 Phase 2: Currencies & Metadata** (Global Settings)
-- [x] **V2 Phase 3: Automation & Rules** (The "Intelligence" Layer)
-- [x] **V2 Phase 4: Attachments & Insights** (Receipts & Reporting)
+- [x] **v2.x Exhaustive API** (47 Core Tools)
+- [ ] [**V3 Phase 1: Advanced Financial Logic**](https://github.com/fabianonetto/mcp-server-firefly-iii/issues/9): Transaction Linking & Budget Limits.
+- [ ] [**V3 Phase 2: Data Mastery & Organization**](https://github.com/fabianonetto/mcp-server-firefly-iii/issues/10): Object Groups & Recurring CRUD.
+- [ ] [**V3 Phase 3: Insights & Administration**](https://github.com/fabianonetto/mcp-server-firefly-iii/issues/11): Summary Reports & Exports.
 
 ## ⚙️ Configuration
 Set these environment variables:
