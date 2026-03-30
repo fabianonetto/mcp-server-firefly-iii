@@ -4,7 +4,7 @@ A professional-grade, AI-agnostic bridge that provides 100% API coverage for con
 
 ## 🚀 One Bridge, All AIs
 
-This server exposes **55 Tools** to any AI platform supporting standard protocols.
+This server exposes **62 Tools** to any AI platform supporting standard protocols.
 
 | AI Platform | Protocol Used | Connection Type |
 | :--- | :--- | :--- |
@@ -31,7 +31,7 @@ Moving beyond basic CRUD to advanced logic and data mastery.
 - [x] **v1.x Foundations** (Initial Connectivity)
 - [x] **v2.x Exhaustive API** (47 Core Tools)
 - [x] [**V3 Phase 1: Advanced Financial Logic**](https://github.com/fabianonetto/mcp-server-firefly-iii/issues/9) (v3.0.0-phase1)
-- [ ] [**V3 Phase 2: Data Mastery & Organization**](https://github.com/fabianonetto/mcp-server-firefly-iii/issues/10) (In Progress)
+- [x] [**V3 Phase 2: Data Mastery & Organization**](https://github.com/fabianonetto/mcp-server-firefly-iii/issues/10) (v3.0.0-phase2)
 - [ ] [**V3 Phase 3: Insights & Administration**](https://github.com/fabianonetto/mcp-server-firefly-iii/issues/11): Summary Reports & Exports.
 
 ## ⚙️ Configuration
