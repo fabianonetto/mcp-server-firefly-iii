@@ -72,9 +72,9 @@ Then, point ChatGPT to `http://your-server-ip:PORT/openapi.json`.
 ## 🗺️ Roadmap
 We are working towards a full-fledged Firefly III integration. Check out our [v1.1 Milestone](https://github.com/fabianonetto/mcp-server-firefly-iii/milestone/1).
 
-- [ ] [Categories & Tags Management](https://github.com/fabianonetto/mcp-server-firefly-iii/issues/1)
-- [ ] [Bills & Recurring Transactions](https://github.com/fabianonetto/mcp-server-firefly-iii/issues/2)
-- [ ] [Advanced Search Tool](https://github.com/fabianonetto/mcp-server-firefly-iii/issues/3)
+- [x] [Categories & Tags Management](https://github.com/fabianonetto/mcp-server-firefly-iii/issues/1) (v1.1.0)
+- [x] [Bills & Recurring Transactions](https://github.com/fabianonetto/mcp-server-firefly-iii/issues/2) (v1.2.0)
+- [ ] [Advanced Search Tool](https://github.com/fabianonetto/mcp-server-firefly-iii/issues/3) (v1.3.0)
 - [ ] [Piggy Banks Integration](https://github.com/fabianonetto/mcp-server-firefly-iii/issues/4)
 
 ## ✨ Created with Gemini CLI
