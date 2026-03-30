@@ -37,6 +37,26 @@ const insightsTools = [
     description: "Get balance trend charts.",
     inputSchema: { type: "object", properties: { start: { type: "string" }, end: { type: "string" } }, required: ["start", "end"] },
     handler: async (args) => (await apiClient.get("/charts/account/overview", { params: args })).data
+  },
+  // v3.0 Insight tools
+  {
+    name: "get_net_worth_summary",
+    description: "Get pre-calculated net worth summary over time.",
+    inputSchema: { type: "object", properties: {} },
+    handler: async () => (await apiClient.get("/summary/basic")).data
+  },
+  {
+    name: "get_spending_summary",
+    description: "Get spending summary by category.",
+    inputSchema: { 
+      type: "object", 
+      properties: { 
+        start: { type: "string", description: "YYYY-MM-DD" },
+        end: { type: "string", description: "YYYY-MM-DD" }
+      }, 
+      required: ["start", "end"] 
+    },
+    handler: async (args) => (await apiClient.get("/summary/category", { params: args })).data
   }
 ];
 

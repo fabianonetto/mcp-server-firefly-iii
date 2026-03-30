@@ -1,6 +1,6 @@
-# Firefly III MCP Tool Reference (v3.0.0-phase2)
+# Firefly III MCP Tool Reference (v3.0.0-phase3)
 
-This document provides a definitive list of all tools available in the Firefly III AI Bridge.
+This document provides a definitive list of all 65 tools available in the Firefly III AI Bridge.
 
 ## 🛠️ Tool Registry
 
@@ -17,16 +17,24 @@ This document provides a definitive list of all tools available in the Firefly I
 - `create_budget_limit`: Set a new limit for a budget.
 - `delete_budget_limit`: Remove a period limit.
 
-### 📁 Object Groups (New in v3.0 Phase 2)
+### 📁 Object Groups (v3.0)
 - `list_object_groups`: View groups used for organizing accounts/piggy banks.
 - `create_object_group`: Group resources for better AI organization.
 
-### 🔄 Recurring Transactions (New in v3.0 Phase 2)
+### 🔄 Recurring Transactions (v3.0)
 - `list_recurring`: Review all automated transaction rules.
 - `get_recurring`: Get details for a specific recurrence.
 - `create_recurring`: Set up new automated transaction rules.
 - `update_recurring`: Modify recurrence properties.
 - `delete_recurring`: Stop an automated recurrence.
+
+### 📊 Advanced Insights (New in v3.0 Phase 3)
+- `get_net_worth_summary`: Rapid overview of net worth trends.
+- `get_spending_summary`: Category-based spending reports for a period.
+- `get_account_overview_chart`: Pre-calculated balance trend data.
+
+### 🛡️ Administration (New in v3.0 Phase 3)
+- `trigger_export`: AI-initiated data backups (CSV/JSON).
 
 ### 💰 Accounts
 - `list_accounts`: Search and list all accounts by type.
@@ -85,9 +93,8 @@ This document provides a definitive list of all tools available in the Firefly I
 - `get_preference`: Read a specific setting.
 - `update_preference`: Change system behavior.
 
-### 📁 Attachments & Insights
+### 📁 Attachments
 - `list_attachments`: View all uploaded files.
 - `get_attachment`: Metadata for specific files.
 - `upload_attachment`: Store new receipts.
 - `delete_attachment`: Remove files.
-- `get_account_overview_chart`: Retrieve pre-calculated trend data.

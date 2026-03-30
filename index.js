@@ -21,6 +21,7 @@ const metaTools = require("./src/tools/meta.js");
 const billsTools = require("./src/tools/bills.js");
 const groupsTools = require("./src/tools/groups.js");
 const recurringTools = require("./src/tools/recurring.js");
+const adminTools = require("./src/tools/admin.js");
 
 // Registry
 const TOOLS = [
@@ -34,7 +35,8 @@ const TOOLS = [
   ...metaTools,
   ...billsTools,
   ...groupsTools,
-  ...recurringTools
+  ...recurringTools,
+  ...adminTools
 ];
 
 // --- MCP Server Implementation ---

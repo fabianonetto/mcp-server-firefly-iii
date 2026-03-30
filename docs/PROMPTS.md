@@ -1,13 +1,16 @@
-# Firefly III AI Prompt Gallery (v3.0.0-phase2)
+# Firefly III AI Prompt Gallery (v3.0.0-phase3)
 
 This guide provides example prompts for all tools available in the AI Bridge.
+
+## 📊 Insights & Admin (v3.0 Phase 3)
+- *"Give me a summary of my net worth trend."*
+- *"How much did I spend per category last month?"*
+- *"Back up my data to a CSV file for the last year."* (Uses `trigger_export`)
 
 ## 📁 Organization & Mastery (v3.0 Phase 2)
 - *"List all my object groups."*
 - *"Create a new object group called 'Business' for my professional accounts."*
-- *"Show me my recurring transactions."*
-- *"Set up a new monthly recurrence for 'Netflix' of $15.99 from my 'Checking Account'."*
-- *"Stop my automated recurring transaction for 'Gym Membership'."*
+- *"Set up a new monthly recurrence for 'Netflix' of $15.99."*
 
 ## 🔗 Advanced Logic (v3.0 Phase 1)
 - *"Link my last transaction to transaction ID 123 as a 'reimbursement'."*
@@ -40,9 +43,9 @@ This guide provides example prompts for all tools available in the AI Bridge.
 - *"Show me how close I am to reaching my 'New Car' goal."*
 - *"Put $100 into my 'Emergency Fund'."*
 
-## 📁 Attachments & Insights
+## 📁 Attachments
 - *"Upload this receipt to my last transaction."*
-- *"Show me my balance trend chart for the last 6 months."*
+- *"List all files I have uploaded."*
 
 ## ⚙️ System & Preferences
 - *"Check our connection to Firefly III."*
