@@ -27,7 +27,7 @@ const apiClient = axios.create({
 
 // --- MCP Server Implementation ---
 const mcpServer = new Server(
-  { name: "mcp-server-firefly-iii", version: "1.3.0" },
+  { name: "mcp-server-firefly-iii", version: "1.4.0" },
   { capabilities: { tools: {} } }
 );
 
@@ -141,6 +141,29 @@ const TOOLS = [
       required: ["query"]
     },
     handler: async (args) => (await apiClient.get("/search/transactions", { params: { query: args.query, limit: args.limit || 10 } })).data
+  },
+  {
+    name: "list_piggy_banks",
+    description: "List all piggy banks (savings goals).",
+    inputSchema: { type: "object", properties: {} },
+    handler: async () => (await apiClient.get("/piggy-banks")).data
+  },
+  {
+    name: "update_piggy_bank",
+    description: "Add or remove money from a piggy bank.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        id: { type: "string", description: "The ID of the piggy bank." },
+        amount: { type: "string", description: "The amount to add (positive) or remove (negative)." }
+      },
+      required: ["id", "amount"]
+    },
+    handler: async (args) => {
+      const payload = { amount: args.amount };
+      await apiClient.post(`/piggy-banks/${args.id}/events`, payload);
+      return { message: "Piggy bank updated successfully." };
+    }
   }
 ];
 
@@ -198,7 +221,7 @@ async function runServer() {
       const host = req.get('host');
       const spec = {
         openapi: "3.0.0",
-        info: { title: "Firefly III AI Bridge", version: "1.3.0" },
+        info: { title: "Firefly III AI Bridge", version: "1.4.0" },
         servers: [{ url: `http://${host}/api` }],
         paths: {}
       };

@@ -50,3 +50,11 @@ This document provides a detailed reference for all tools available in the Firef
     - *Input*: None
 - **`list_recurring`**: Lists all recurring transaction rules.
     - *Input*: None
+
+### Savings
+- **`list_piggy_banks`**: Lists all savings goals (piggy banks) and their progress.
+    - *Input*: None
+- **`update_piggy_bank`**: Adds or removes money from a specific piggy bank.
+    - *Input Schema*:
+        - `id` (string): The unique ID of the piggy bank.
+        - `amount` (string): Amount to add (positive) or remove (negative).

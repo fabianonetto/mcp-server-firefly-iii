@@ -1,6 +1,6 @@
 {
   "name": "mcp-server-firefly-iii",
-  "version": "1.3.0",
+  "version": "1.4.0",
   "description": "An MCP server for interacting with Firefly III personal finance manager",
   "main": "index.js",
   "bin": {
