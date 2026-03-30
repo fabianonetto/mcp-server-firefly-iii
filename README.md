@@ -63,10 +63,11 @@ npx -y mcp-server-firefly-iii
 ```
 Then, point ChatGPT to `http://your-server-ip:PORT/openapi.json`.
 
-## 📜 Documentation Files
-- **`README.md`**: Human-readable setup and usage guide.
-- **`gemini.md`**: AI-readable instructions for Gemini Agents.
-- **`/openapi.json`**: Auto-generated specification for ChatGPT Actions.
+## 📜 Documentation
+- [**Tool Reference (API.md)**](docs/API.md): Detailed list of all tools and parameters.
+- [**Testing Guide (TESTING.md)**](docs/TESTING.md): How to run and write automated tests.
+- [**Gemini Manifest (gemini.md)**](gemini.md): Instructions for Gemini Agents.
+- [**OpenAPI Spec**](/openapi.json): Specification for ChatGPT Actions (available when running in Web mode).
 
 ## 🗺️ Roadmap
 We are working towards a full-fledged Firefly III integration. Check out our [v1.1 Milestone](https://github.com/fabianonetto/mcp-server-firefly-iii/milestone/1).
