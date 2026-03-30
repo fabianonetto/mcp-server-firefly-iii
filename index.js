@@ -27,7 +27,7 @@ const apiClient = axios.create({
 
 // --- MCP Server Implementation ---
 const mcpServer = new Server(
-  { name: "mcp-server-firefly-iii", version: "2.0.0" },
+  { name: "mcp-server-firefly-iii", version: "3.0.0-phase1" },
   { capabilities: { tools: {} } }
 );
 
@@ -38,6 +38,71 @@ const TOOLS = [
     description: "Get system information from Firefly III.",
     inputSchema: { type: "object", properties: {} },
     handler: async () => (await apiClient.get("/about")).data
+  },
+
+  // TRANSACTION LINKING (v3.0)
+  {
+    name: "list_link_types",
+    description: "List all available transaction link types (e.g., reimbursement).",
+    inputSchema: { type: "object", properties: {} },
+    handler: async () => (await apiClient.get("/link-types")).data
+  },
+  {
+    name: "link_transactions",
+    description: "Create a link between two transactions.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        link_type_id: { type: "string" },
+        inward_id: { type: "string" },
+        outward_id: { type: "string" },
+        notes: { type: "string" }
+      },
+      required: ["link_type_id", "inward_id", "outward_id"]
+    },
+    handler: async (args) => (await apiClient.post("/transaction-links", args)).data
+  },
+  {
+    name: "list_transaction_links",
+    description: "List links for a specific transaction.",
+    inputSchema: { type: "object", properties: { id: { type: "string" } }, required: ["id"] },
+    handler: async (args) => (await apiClient.get(`/transactions/${args.id}/links`)).data
+  },
+
+  // BUDGET LIMITS (v3.0)
+  {
+    name: "list_budget_limits",
+    description: "List monetary limits for a budget.",
+    inputSchema: { type: "object", properties: { id: { type: "string" } }, required: ["id"] },
+    handler: async (args) => (await apiClient.get(`/budgets/${args.id}/limits`)).data
+  },
+  {
+    name: "create_budget_limit",
+    description: "Set a monetary limit for a budget period.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        id: { type: "string", description: "Budget ID" },
+        amount: { type: "string" },
+        start: { type: "string", description: "YYYY-MM-DD" },
+        end: { type: "string", description: "YYYY-MM-DD" },
+        currency_code: { type: "string" }
+      },
+      required: ["id", "amount", "start", "end"]
+    },
+    handler: async (args) => {
+      const { id, ...data } = args;
+      return (await apiClient.post(`/budgets/${id}/limits`, data)).data;
+    }
+  },
+  {
+    name: "delete_budget_limit",
+    description: "Delete a budget limit.",
+    inputSchema: { type: "object", properties: { budget_id: { type: "string" }, limit_id: { type: "string" } }, required: ["budget_id", "limit_id"] },
+    handler: async (args) => {
+      await apiClient.delete(`/budgets/${args.budget_id}/limits/${args.limit_id}`);
+      return { message: "Budget limit deleted successfully." };
+    }
   },
 
   // ACCOUNTS
@@ -526,7 +591,7 @@ async function runServer() {
       const host = req.get('host');
       const spec = {
         openapi: "3.0.0",
-        info: { title: "Firefly III AI Bridge", version: "2.0.0" },
+        info: { title: "Firefly III AI Bridge", version: "3.0.0" },
         servers: [{ url: `http://${host}/api` }],
         paths: {}
       };

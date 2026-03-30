@@ -1,11 +1,21 @@
-# Firefly III MCP Tool Reference (v2.0.0)
+# Firefly III MCP Tool Reference (v3.0.0-phase1)
 
-This document provides a definitive list of all 47 tools available in the Firefly III AI Bridge.
+This document provides a definitive list of all 55 tools available in the Firefly III AI Bridge.
 
 ## 🛠️ Tool Registry
 
 ### 🏗️ System
 - `get_about`: Connection and version details.
+
+### 🔗 Transaction Linking (New in v3.0)
+- `list_link_types`: List available link relationships (reimbursement, etc.).
+- `link_transactions`: Create a logical link between two transaction journals.
+- `list_transaction_links`: View links for a specific transaction.
+
+### 📉 Budget Limits (New in v3.0)
+- `list_budget_limits`: View monetary limits for specific periods.
+- `create_budget_limit`: Set a new limit for a budget.
+- `delete_budget_limit`: Remove a period limit.
 
 ### 💰 Accounts
 - `list_accounts`: Search and list all accounts by type.
@@ -17,7 +27,7 @@ This document provides a definitive list of all 47 tools available in the Firefl
 ### 💸 Transactions
 - `list_transactions`: History retrieval with pagination.
 - `get_transaction`: Deep-dive into a specific transaction.
-- `create_transaction`: Intelligent recording (Withdrawal/Deposit/Transfer).
+- `create_transaction`: Intelligent recording.
 - `update_transaction`: Correct transaction groups.
 - `delete_transaction`: Remove financial records.
 - `search_transactions`: Powerful query-based search.
@@ -68,6 +78,6 @@ This document provides a definitive list of all 47 tools available in the Firefl
 ### 📁 Attachments & Insights
 - `list_attachments`: View all uploaded files.
 - `get_attachment`: Metadata for specific files.
-- `upload_attachment`: Store new receipts (Base64).
+- `upload_attachment`: Store new receipts.
 - `delete_attachment`: Remove files.
 - `get_account_overview_chart`: Retrieve pre-calculated trend data.

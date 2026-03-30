@@ -3,28 +3,35 @@ const axiosMockAdapter = require("axios-mock-adapter");
 
 const mock = new axiosMockAdapter(apiClient);
 
-describe("Firefly III MCP Server v2.0.0 (Definitive)", () => {
+describe("Firefly III MCP Server v3.0.0-phase1 (Power User)", () => {
   beforeEach(() => {
     mock.reset();
   });
 
-  test("should list all 47 tools (100% API Coverage)", async () => {
-    expect(TOOLS.length).toBe(47);
+  test("should list all 55 tools (Advanced Logic Phase 1)", async () => {
+    expect(TOOLS.length).toBe(55);
   });
 
-  // CORE SMOKE TESTS
-  test("get_about should return info", async () => {
-    mock.onGet("/about").reply(200, { data: { version: "6.0.0" } });
-    const tool = TOOLS.find(t => t.name === "get_about");
+  // LINKING TESTS
+  test("list_link_types should return types", async () => {
+    mock.onGet("/link-types").reply(200, { data: [{ name: "reimbursement" }] });
+    const tool = TOOLS.find(t => t.name === "list_link_types");
     const result = await tool.handler({});
-    expect(result.data.version).toBe("6.0.0");
+    expect(result.data[0].name).toBe("reimbursement");
   });
 
-  test("create_account should post correct data", async () => {
-    const payload = { name: "Test", type: "asset" };
-    mock.onPost("/accounts", payload).reply(200, { data: { id: "1" } });
-    const tool = TOOLS.find(t => t.name === "create_account");
-    const result = await tool.handler(payload);
+  test("link_transactions should post correctly", async () => {
+    mock.onPost("/transaction-links").reply(200, { data: { id: "1" } });
+    const tool = TOOLS.find(t => t.name === "link_transactions");
+    const result = await tool.handler({ link_type_id: "1", inward_id: "2", outward_id: "3" });
     expect(result.data.id).toBe("1");
+  });
+
+  // BUDGET LIMIT TESTS
+  test("create_budget_limit should post limit", async () => {
+    mock.onPost("/budgets/1/limits").reply(200, { data: { id: "10" } });
+    const tool = TOOLS.find(t => t.name === "create_budget_limit");
+    const result = await tool.handler({ id: "1", amount: "500", start: "2024-01-01", end: "2024-01-31" });
+    expect(result.data.id).toBe("10");
   });
 });

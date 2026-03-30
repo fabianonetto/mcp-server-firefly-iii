@@ -1,6 +1,12 @@
-# Firefly III AI Prompt Gallery (v2.0.0)
+# Firefly III AI Prompt Gallery (v3.0.0-phase1)
 
-This guide provides example prompts for all 47 tools available in the AI Bridge.
+This guide provides example prompts for all tools available in the AI Bridge.
+
+## 🔗 Advanced Logic (v3.0)
+- *"Link my last transaction to transaction ID 123 as a 'reimbursement'."*
+- *"Show me all links for my latest credit card payment."*
+- *"Set a $500 limit for my 'Dining Out' budget for this month."*
+- *"What are the current limits set for my 'Subscriptions' budget?"*
 
 ## 💰 Account Management
 - *"Create a new asset account called 'Cash Wallet' with a $50 opening balance."*
@@ -37,7 +43,7 @@ This guide provides example prompts for all 47 tools available in the AI Bridge.
 - *"Create a new piggy bank called 'Holiday Trip' with a target of $2000."*
 
 ## 📁 Attachments & Insights
-- *"Upload this receipt to my last transaction."* (Requires file path/Base64)
+- *"Upload this receipt to my last transaction."*
 - *"Show me my balance trend chart for the last 6 months."*
 - *"List all files I have uploaded."*
 
