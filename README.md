@@ -32,7 +32,7 @@ Moving beyond basic CRUD to advanced logic and data mastery.
 - [x] **v2.x Exhaustive API** (47 Core Tools)
 - [x] [**V3 Phase 1: Advanced Financial Logic**](https://github.com/fabianonetto/mcp-server-firefly-iii/issues/9) (v3.0.0-phase1)
 - [x] [**V3 Phase 2: Data Mastery & Organization**](https://github.com/fabianonetto/mcp-server-firefly-iii/issues/10) (v3.0.0-phase2)
-- [ ] [**V3 Phase 3: Insights & Administration**](https://github.com/fabianonetto/mcp-server-firefly-iii/issues/11): Summary Reports & Exports.
+- [ ] [**V3 Phase 3: Insights & Administration**](https://github.com/fabianonetto/mcp-server-firefly-iii/issues/11) (In Progress)
 
 ## ⚙️ Configuration
 Set these environment variables:
