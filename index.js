@@ -15,12 +15,7 @@ const FIREFLY_URL = process.env.FIREFLY_URL;
 const FIREFLY_TOKEN = process.env.FIREFLY_TOKEN;
 const PORT = process.env.PORT; 
 
-if (!FIREFLY_URL || !FIREFLY_TOKEN) {
-  console.error("Error: FIREFLY_URL and FIREFLY_TOKEN are required.");
-  process.exit(1);
-}
-
-const baseUrl = FIREFLY_URL.replace(/\/+$/, "");
+const baseUrl = (FIREFLY_URL || "").replace(/\/+$/, "");
 const apiClient = axios.create({
   baseURL: `${baseUrl}/api/v1`,
   headers: {
@@ -32,7 +27,7 @@ const apiClient = axios.create({
 
 // --- MCP Server Implementation ---
 const mcpServer = new Server(
-  { name: "mcp-server-firefly-iii", version: "1.0.0" },
+  { name: "mcp-server-firefly-iii", version: "1.1.0" },
   { capabilities: { tools: {} } }
 );
 
@@ -70,6 +65,7 @@ const TOOLS = [
         source_name: { type: "string" },
         destination_name: { type: "string" },
         category_name: { type: "string" },
+        tags: { type: "array", items: { type: "string" }, description: "Array of tag names." },
         date: { type: "string" }
       },
       required: ["type", "amount", "description", "source_name", "destination_name"]
@@ -88,6 +84,42 @@ const TOOLS = [
     description: "List budgets and their status.",
     inputSchema: { type: "object", properties: {} },
     handler: async () => (await apiClient.get("/budgets")).data
+  },
+  {
+    name: "list_categories",
+    description: "List all transaction categories.",
+    inputSchema: { type: "object", properties: {} },
+    handler: async () => (await apiClient.get("/categories")).data
+  },
+  {
+    name: "create_category",
+    description: "Create a new transaction category.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        name: { type: "string", description: "The name of the category." }
+      },
+      required: ["name"]
+    },
+    handler: async (args) => (await apiClient.post("/categories", args)).data
+  },
+  {
+    name: "list_tags",
+    description: "List all transaction tags.",
+    inputSchema: { type: "object", properties: {} },
+    handler: async () => (await apiClient.get("/tags")).data
+  },
+  {
+    name: "create_tag",
+    description: "Create a new transaction tag.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        tag: { type: "string", description: "The tag name." }
+      },
+      required: ["tag"]
+    },
+    handler: async (args) => (await apiClient.post("/tags", args)).data
   }
 ];
 
@@ -108,61 +140,75 @@ mcpServer.setRequestHandler(CallToolRequestSchema, async (request) => {
 });
 
 // --- Universal Web API (Express) ---
-if (PORT) {
-  const app = express();
-  app.use(express.json());
+async function runServer() {
+  if (!FIREFLY_URL || !FIREFLY_TOKEN) {
+    console.error("Error: FIREFLY_URL and FIREFLY_TOKEN are required.");
+    process.exit(1);
+  }
 
-  // 1. MCP over SSE
-  let transport;
-  app.get("/sse", async (req, res) => {
-    transport = new SSEServerTransport("/messages", res);
-    await mcpServer.connect(transport);
-  });
-  app.post("/messages", async (req, res) => {
-    if (transport) await transport.handlePostMessage(req, res);
-  });
+  if (PORT) {
+    const app = express();
+    app.use(express.json());
 
-  // 2. Standard REST API (for ChatGPT Actions)
-  TOOLS.forEach(tool => {
-    app.all(`/api/${tool.name}`, async (req, res) => {
-      try {
-        const result = await tool.handler(req.method === 'GET' ? req.query : req.body);
-        res.json(result);
-      } catch (e) {
-        res.status(500).json({ error: e.message });
-      }
+    // 1. MCP over SSE
+    let transport;
+    app.get("/sse", async (req, res) => {
+      transport = new SSEServerTransport("/messages", res);
+      await mcpServer.connect(transport);
     });
-  });
+    app.post("/messages", async (req, res) => {
+      if (transport) await transport.handlePostMessage(req, res);
+    });
 
-  // 3. OpenAPI Spec for ChatGPT
-  app.get("/openapi.json", (req, res) => {
-    const host = req.get('host');
-    const spec = {
-      openapi: "3.0.0",
-      info: { title: "Firefly III AI Bridge", version: "1.0.0" },
-      servers: [{ url: `http://${host}/api` }],
-      paths: {}
-    };
-    TOOLS.forEach(t => {
-      spec.paths[`/${t.name}`] = {
-        post: {
-          operationId: t.name,
-          summary: t.description,
-          requestBody: { content: { "application/json": { schema: t.inputSchema } } },
-          responses: { "200": { description: "Success" } }
+    // 2. Standard REST API (for ChatGPT Actions)
+    TOOLS.forEach(tool => {
+      app.all(`/api/${tool.name}`, async (req, res) => {
+        try {
+          const result = await tool.handler(req.method === 'GET' ? req.query : req.body);
+          res.json(result);
+        } catch (e) {
+          res.status(500).json({ error: e.message });
         }
-      };
+      });
     });
-    res.json(spec);
-  });
 
-  app.listen(PORT, () => {
-    console.error(`Universal AI Bridge running at http://localhost:${PORT}`);
-    console.error(`- MCP (SSE): http://localhost:${PORT}/sse`);
-    console.error(`- OpenAPI: http://localhost:${PORT}/openapi.json`);
-  });
-} else {
-  // Fallback to Stdio for Gemini/Local CLI
-  const transport = new StdioServerTransport();
-  mcpServer.connect(transport).catch(console.error);
+    // 3. OpenAPI Spec for ChatGPT
+    app.get("/openapi.json", (req, res) => {
+      const host = req.get('host');
+      const spec = {
+        openapi: "3.0.0",
+        info: { title: "Firefly III AI Bridge", version: "1.1.0" },
+        servers: [{ url: `http://${host}/api` }],
+        paths: {}
+      };
+      TOOLS.forEach(t => {
+        spec.paths[`/${t.name}`] = {
+          post: {
+            operationId: t.name,
+            summary: t.description,
+            requestBody: { content: { "application/json": { schema: t.inputSchema } } },
+            responses: { "200": { description: "Success" } }
+          }
+        };
+      });
+      res.json(spec);
+    });
+
+    app.listen(PORT, () => {
+      console.error(`Universal AI Bridge running at http://localhost:${PORT}`);
+      console.error(`- MCP (SSE): http://localhost:${PORT}/sse`);
+      console.error(`- OpenAPI: http://localhost:${PORT}/openapi.json`);
+    });
+  } else {
+    // Fallback to Stdio for Gemini/Local CLI
+    const transport = new StdioServerTransport();
+    await mcpServer.connect(transport);
+    console.error("Firefly III MCP Server running on stdio");
+  }
 }
+
+if (require.main === module) {
+  runServer().catch(console.error);
+}
+
+module.exports = { mcpServer, TOOLS, apiClient };
