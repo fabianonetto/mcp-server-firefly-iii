@@ -1,0 +1,26 @@
+{
+  "name": "firefly-iii-universal-bridge",
+  "version": "3.0.0",
+  "description": "Exhaustive AI Bridge for Firefly III with 65 tools for full finance mastery.",
+  "mcpServers": {
+    "firefly": {
+      "command": "node",
+      "args": ["{{extensionPath}}/index.js"],
+      "env": {
+        "FIREFLY_URL": "http://YOUR_HOST:YOUR_PORT",
+        "FIREFLY_TOKEN": "YOUR_TOKEN"
+      }
+    }
+  },
+  "settings": {
+    "FIREFLY_URL": {
+      "type": "string",
+      "description": "The base URL of your Firefly III instance.",
+      "default": "http://localhost:8080"
+    },
+    "FIREFLY_TOKEN": {
+      "type": "string",
+      "description": "Your Personal Access Token from Firefly III."
+    }
+  }
+}

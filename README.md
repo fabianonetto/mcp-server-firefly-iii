@@ -33,6 +33,25 @@ Moving beyond basic CRUD to advanced logic and data mastery.
 - [x] **v2.x Exhaustive API** (CRUD & Core Admin)
 - [x] **v3.x Power User Phase** (Advanced Logic, Linking, & Insights)
 
+## 📦 Installation & Usage
+
+### 1. As a Gemini CLI Extension (Easiest)
+Install the bridge directly from GitHub:
+```powershell
+gemini extensions install https://github.com/fabianonetto/mcp-server-firefly-iii
+```
+Then configure your instance:
+```powershell
+gemini config set extensions.firefly-iii-universal-bridge.settings.FIREFLY_URL "http://your-host:YOUR_PORT"
+gemini config set extensions.firefly-iii-universal-bridge.settings.FIREFLY_TOKEN "your_token"
+```
+
+### 2. Manual MCP Setup (Gemini CLI / Claude / ChatGPT)
+Set these environment variables and run with `npx`:
+```bash
+npx -y mcp-server-firefly-iii
+```
+
 ## ⚙️ Configuration
 Set these environment variables:
 - `FIREFLY_URL`: Your instance URL (e.g., `http://your-host:YOUR_PORT`).

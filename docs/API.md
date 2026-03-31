@@ -30,6 +30,9 @@ This document provides a definitive list of all 65 tools available in the Firefl
 
 ### 📊 Advanced Insights (New in v3.0 Phase 3)
 - `get_net_worth_summary`: Rapid overview of net worth trends.
+    - *Input Schema*:
+        - `start` (string): YYYY-MM-DD
+        - `end` (string): YYYY-MM-DD
 - `get_spending_summary`: Category-based spending reports for a period.
 - `get_account_overview_chart`: Pre-calculated balance trend data.
 
@@ -40,6 +43,15 @@ This document provides a definitive list of all 65 tools available in the Firefl
 - `list_accounts`: Search and list all accounts by type.
 - `get_account`: Retrieve details for a specific account.
 - `create_account`: Initialize a new account.
+    - *Input Schema*:
+        - `name` (string)
+        - `type` (string): `asset`, `expense`, `revenue`, or `liabilities`.
+        - `account_role` (string, optional): `defaultAsset`, `sharedAsset`, `savingAsset`, `ccAsset`, or `cashAsset`.
+        - `currency_code` (string, optional)
+        - `opening_balance` (string, optional)
+        - `opening_balance_date` (string, optional): YYYY-MM-DD
+        - `credit_card_type` (string, optional): `monthlyFull` or `interest`.
+        - `monthly_payment_date` (string, optional): YYYY-MM-DD
 - `update_account`: Modify account properties.
 - `delete_account`: Permanently remove an account.
 

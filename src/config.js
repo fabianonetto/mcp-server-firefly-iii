@@ -24,6 +24,13 @@ const apiClient = axios.create({
   },
 });
 
+// Debug interceptor to capture raw outgoing requests
+apiClient.interceptors.request.use(config => {
+  console.error(`DEBUG: ${config.method.toUpperCase()} ${config.baseURL}${config.url}`);
+  if (config.params) console.error(`DEBUG PARAMS: ${JSON.stringify(config.params)}`);
+  return config;
+});
+
 module.exports = {
   FIREFLY_URL,
   FIREFLY_TOKEN,

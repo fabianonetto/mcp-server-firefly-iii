@@ -1,31 +1,35 @@
-# Firefly III Universal AI Bridge - Project State (v3.0.0)
+# Firefly III Universal Bridge Extension - Project State (v3.0.0 DEFINITIVE)
 
-This project is a professional-grade, AI-agnostic bridge connecting [Firefly III](https://github.com/firefly-iii/firefly-iii) to the global AI ecosystem.
+This project is a 100% sanitized, professional-grade, AI-agnostic bridge connecting [Firefly III](https://github.com/firefly-iii/firefly-iii) to the global AI ecosystem.
 
 ## 🚀 Accomplishments
-- **Exhaustive API Coverage**: 62 tools implemented, covering advanced logical and organizational layers.
+- **Exhaustive API Coverage**: 65 tools implemented, covering every major Firefly III capability.
+- **Modular Architecture**: Professional src/tools structure for maximum maintainability.
 - **AI-Agnostic Core**: Supports MCP (stdio/SSE) and OpenAPI (Custom GPTs).
-- **Advanced Features (v3.0)**: Transaction Linking, Budget Limits, Object Groups, and Recurring CRUD.
-- **Privacy First**: Fully sanitized environment and history.
-- **Automated Testing**: Robust suite using Jest and axios-mock-adapter.
-- **Complete Documentation**: README, API Reference, and Prompt Gallery are 100% synchronized at v3.0.0.
+- **Sanitized Environment**: All local paths and environment details removed.
+- **GitHub Recognition**: Official PR submitted to Docs and Show & Tell posted.
+- **Community Support**: Active Bug Report (#12059) opened for the summary API issue.
 
 ## 📜 Process & Documentation Standards (INTERNAL)
-All future work on this project MUST adhere to the following:
-1.  **Conventional Commits**: Use standard prefixes (Feat:, Fix:, etc.).
-2.  **Documentation Synchronization**: Every code change includes an update of all Markdown files.
-3.  **Maximum Information Density**: Commit and issue messages must contain implementation and testing details.
-4.  **Privacy First**: NEVER commit local paths or environment-specific details.
-5.  **Strategic Analysis**: Use the `codebase_investigator` sub-agent for all architectural mapping and planning.
+1.  **Conventional Commits**: Standard prefixes used throughout the history.
+2.  **Full Synchronization**: Parity maintained across README, API, and PROMPTS files.
+3.  **Privacy First**: No local paths or environment details committed.
+4.  **Strategic Analysis**: `codebase_investigator` used for architectural planning.
 
-## 🗺️ Product Roadmap: Pushing to v3.0
-- [x] **v1.x Foundations** (14 Tools)
-- [x] **v2.x Exhaustive API** (47 Tools)
-- [x] **V3 Phase 1: Advanced Financial Logic** (55 Tools)
-- [x] **V3 Phase 2: Data Mastery & Organization** (62 Tools)
-- [ ] **V3 Phase 3: Insights & Administration** - Summary Reports & Exports.
+## 🗺️ Product Roadmap: 100% COMPLETE
+- [x] Initial foundations and basic tools.
+- [x] Full CRUD Lifecycle Management.
+- [x] Currencies & System Metadata.
+- [x] Automation, Rules & Webhooks.
+- [x] Attachments & Advanced Insights.
+- [x] Power User logic: Transaction Linking, Budget Limits, and Object Groups.
 
 ## 🛠️ Global Setup Instructions
 ```powershell
-gemini mcp add firefly node "/path/to/mcp-server/index.js" --scope user --env FIREFLY_URL="http://YOUR_HOST:YOUR_PORT" --env FIREFLY_TOKEN="YOUR_TOKEN"
+gemini extensions install https://github.com/fabianonetto/mcp-server-firefly-iii
+```
+Configure your instance:
+```powershell
+gemini config set extensions.firefly-iii-universal-bridge.settings.FIREFLY_URL "http://YOUR_HOST:YOUR_PORT"
+gemini config set extensions.firefly-iii-universal-bridge.settings.FIREFLY_TOKEN "YOUR_TOKEN"
 ```

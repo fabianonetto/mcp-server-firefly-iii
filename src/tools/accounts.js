@@ -21,8 +21,12 @@ const accountsTools = [
       properties: {
         name: { type: "string" },
         type: { type: "string", enum: ["asset", "expense", "revenue", "liabilities"] },
+        account_role: { type: "string", enum: ["defaultAsset", "sharedAsset", "savingAsset", "ccAsset", "cashAsset"] },
         currency_code: { type: "string" },
-        opening_balance: { type: "string" }
+        opening_balance: { type: "string" },
+        opening_balance_date: { type: "string", description: "YYYY-MM-DD" },
+        credit_card_type: { type: "string", enum: ["monthlyFull", "interest"] },
+        monthly_payment_date: { type: "string", description: "YYYY-MM-DD" }
       },
       required: ["name", "type"]
     },

@@ -23,6 +23,16 @@ describe("Firefly III MCP Server v3.0.0-phase3 (Insights)", () => {
     expect(result.data).toEqual([]);
   });
 
+  test("get_net_worth_summary should pass start and end parameters", async () => {
+    mock.onGet("/summary/basic").reply(200, { data: [] });
+    const tool = TOOLS.find(t => t.name === "get_net_worth_summary");
+    await tool.handler({ start: "2023-01-01", end: "2023-12-31" });
+    
+    expect(mock.history.get.length).toBe(1);
+    expect(mock.history.get[0].params).toEqual({ start: "2023-01-01", end: "2023-12-31" });
+    expect(mock.history.get[0].url).toBe("/summary/basic");
+  });
+
   // ADMIN TESTS
   test("trigger_export should post correctly", async () => {
     mock.onPost("/export/transactions").reply(200, {});
