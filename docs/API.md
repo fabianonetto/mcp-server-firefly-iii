@@ -1,11 +1,20 @@
-# Firefly III MCP Tool Reference (v3.0.0-phase3)
+# Firefly III MCP Tool Reference (v3.0.0 DEFINITIVE)
 
-This document provides a definitive list of all 65 tools available in the Firefly III AI Bridge.
+This document provides a definitive list of all 66 tools available in the Firefly III AI Bridge.
 
 ## 🛠️ Tool Registry
 
 ### 🏗️ System
 - `get_about`: Connection and version details.
+
+### 💸 Transactions (Exhaustive)
+- `list_transactions`: History retrieval with pagination.
+- `get_transaction`: Deep-dive into a specific transaction.
+- `create_transaction`: Intelligent recording (Simple).
+- `create_split_transaction`: Create a single entry with multiple categories/amounts (e.g., one grocery receipt split into Food and Household).
+- `update_transaction`: Correct transaction group descriptions.
+- `delete_transaction`: Remove financial records.
+- `search_transactions`: Powerful query-based search.
 
 ### 🔗 Transaction Linking (v3.0)
 - `list_link_types`: List available link relationships.
@@ -28,40 +37,20 @@ This document provides a definitive list of all 65 tools available in the Firefl
 - `update_recurring`: Modify recurrence properties.
 - `delete_recurring`: Stop an automated recurrence.
 
-### 📊 Advanced Insights (New in v3.0 Phase 3)
+### 📊 Advanced Insights
 - `get_net_worth_summary`: Rapid overview of net worth trends.
-    - *Input Schema*:
-        - `start` (string): YYYY-MM-DD
-        - `end` (string): YYYY-MM-DD
 - `get_spending_summary`: Category-based spending reports for a period.
 - `get_account_overview_chart`: Pre-calculated balance trend data.
 
-### 🛡️ Administration (New in v3.0 Phase 3)
+### 🛡️ Administration
 - `trigger_export`: AI-initiated data backups (CSV/JSON).
 
 ### 💰 Accounts
 - `list_accounts`: Search and list all accounts by type.
 - `get_account`: Retrieve details for a specific account.
-- `create_account`: Initialize a new account.
-    - *Input Schema*:
-        - `name` (string)
-        - `type` (string): `asset`, `expense`, `revenue`, or `liabilities`.
-        - `account_role` (string, optional): `defaultAsset`, `sharedAsset`, `savingAsset`, `ccAsset`, or `cashAsset`.
-        - `currency_code` (string, optional)
-        - `opening_balance` (string, optional)
-        - `opening_balance_date` (string, optional): YYYY-MM-DD
-        - `credit_card_type` (string, optional): `monthlyFull` or `interest`.
-        - `monthly_payment_date` (string, optional): YYYY-MM-DD
+- `create_account`: Initialize a new account (supports opening balances).
 - `update_account`: Modify account properties.
 - `delete_account`: Permanently remove an account.
-
-### 💸 Transactions
-- `list_transactions`: History retrieval with pagination.
-- `get_transaction`: Deep-dive into a specific transaction.
-- `create_transaction`: Intelligent recording.
-- `update_transaction`: Correct transaction groups.
-- `delete_transaction`: Remove financial records.
-- `search_transactions`: Powerful query-based search.
 
 ### 📊 Organization
 - `list_budgets`: Overview of spending limits.

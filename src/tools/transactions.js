@@ -15,7 +15,7 @@ const transactionsTools = [
   },
   {
     name: "create_transaction",
-    description: "Create a withdrawal, deposit, or transfer.",
+    description: "Create a simple withdrawal, deposit, or transfer.",
     inputSchema: {
       type: "object",
       properties: {
@@ -37,6 +37,41 @@ const transactionsTools = [
       };
       await apiClient.post("/transactions", payload);
       return { message: "Transaction created successfully." };
+    }
+  },
+  {
+    name: "create_split_transaction",
+    description: "Create a single transaction divided into multiple splits (e.g., one receipt with different categories).",
+    inputSchema: {
+      type: "object",
+      properties: {
+        group_title: { type: "string", description: "Optional title for the transaction group." },
+        splits: {
+          type: "array",
+          items: {
+            type: "object",
+            properties: {
+              type: { type: "string", enum: ["withdrawal", "deposit", "transfer"] },
+              amount: { type: "string" },
+              description: { type: "string" },
+              source_name: { type: "string" },
+              destination_name: { type: "string" },
+              category_name: { type: "string" },
+              tags: { type: "array", items: { type: "string" } }
+            },
+            required: ["type", "amount", "description", "source_name", "destination_name"]
+          }
+        }
+      },
+      required: ["splits"]
+    },
+    handler: async (args) => {
+      const payload = {
+        group_title: args.group_title,
+        transactions: args.splits.map(s => ({ ...s, date: new Date().toISOString() }))
+      };
+      await apiClient.post("/transactions", payload);
+      return { message: "Split transaction created successfully." };
     }
   },
   {
