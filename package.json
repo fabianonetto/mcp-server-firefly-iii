@@ -17,7 +17,7 @@
     "finance",
     "ai"
   ],
-  "author": "",
+  "author": "Fabiano Netto",
   "license": "MIT",
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.28.0",
