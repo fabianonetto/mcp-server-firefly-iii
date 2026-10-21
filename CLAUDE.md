@@ -1,6 +1,6 @@
 # Firefly III MCP Server — Claude Code Guide
 
-MCP server bridging Firefly III personal finance manager to AI assistants. 66 tools, Node.js, fully tested (80 tests).
+MCP server bridging Firefly III personal finance manager to AI assistants. 66 tools, Node.js, fully tested (83 tests).
 
 ---
 
@@ -97,11 +97,11 @@ Restart Claude Desktop after saving.
 ## Project Commands
 
 ```bash
-npm test                   # Run 80-test suite (all mocked, no live Firefly needed)
+npm test                   # Run 83-test suite (all mocked, no live Firefly needed)
 node index.js              # Start in stdio mode (MCP clients: Claude Code, Gemini CLI)
-PORT=3001 node index.js    # Start in HTTP/SSE mode (ChatGPT Actions, REST clients)
+PORT=3001 node index.js    # Start in HTTP mode (Streamable HTTP, SSE, ChatGPT Actions, REST clients)
 docker build -t mcp .      # Build Docker image
-docker run -p 3001:3001 -e FIREFLY_URL=... -e FIREFLY_TOKEN=... -e PORT=3001 mcp # Run SSE mode
+docker run -p 3001:3001 -e FIREFLY_URL=... -e FIREFLY_TOKEN=... -e PORT=3001 mcp # Run HTTP mode
 ```
 
 ---
@@ -160,5 +160,5 @@ Each tool file exports an array of `{ name, description, inputSchema, handler }`
 npm test
 ```
 
-80 tests, 16 describe blocks, all 66 tools covered. No live Firefly III required.
+83 tests, 17 describe blocks, all 66 tools covered. No live Firefly III required.
 See [`docs/TESTING.md`](docs/TESTING.md) for the full coverage table.
