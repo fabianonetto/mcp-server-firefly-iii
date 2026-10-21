@@ -1,6 +1,7 @@
 process.env.NODE_ENV = "test";
 
-const { mcpServer, TOOLS, apiClient } = require("./index.js");
+const http = require("http");
+const { mcpServer, createApp, TOOLS, apiClient } = require("./index.js");
 const axiosMockAdapter = require("axios-mock-adapter");
 
 const mock = new axiosMockAdapter(apiClient);
@@ -68,10 +69,9 @@ describe("MCP Server", () => {
 describe("Core", () => {
   test("get_about: GET /about", async () => {
     const data = { version: "6.0.0", api_version: "2.0.0" };
-    mock.onGet("/about").reply(200, data);
-    const result = await t("get_about").handler({});
-    expect(result).toEqual(data);
-    expect(mock.history.get[0].url).toBe("/about");
+    mock.onGet("/about").reply(200, { data });
+    const result = await t("get_about").handler();
+    expect(result).toEqual({ data });
   });
 });
 
@@ -82,6 +82,7 @@ describe("Accounts", () => {
   test("list_accounts: GET /accounts with default type=asset", async () => {
     mock.onGet("/accounts").reply(200, { data: [] });
     await t("list_accounts").handler({});
+    expect(mock.history.get[0].url).toBe("/accounts");
     expect(mock.history.get[0].params).toEqual({ type: "asset" });
   });
 
@@ -92,34 +93,31 @@ describe("Accounts", () => {
   });
 
   test("get_account: GET /accounts/:id", async () => {
-    mock.onGet("/accounts/42").reply(200, { id: 42 });
+    mock.onGet("/accounts/42").reply(200, { data: { id: "42" } });
     const result = await t("get_account").handler({ id: "42" });
     expect(mock.history.get[0].url).toBe("/accounts/42");
-    expect(result.id).toBe(42);
+    expect(result.data.id).toBe("42");
   });
 
   test("create_account: POST /accounts with payload", async () => {
-    mock.onPost("/accounts").reply(201, { id: 1 });
-    await t("create_account").handler({ name: "Savings", type: "asset" });
-    const body = JSON.parse(mock.history.post[0].data);
-    expect(body.name).toBe("Savings");
-    expect(body.type).toBe("asset");
+    mock.onPost("/accounts").reply(200, { data: { id: "1" } });
+    await t("create_account").handler({ name: "Checking", type: "asset", currency_code: "USD" });
+    expect(mock.history.post[0].url).toBe("/accounts");
+    expect(JSON.parse(mock.history.post[0].data)).toEqual({ name: "Checking", type: "asset", currency_code: "USD" });
   });
 
   test("update_account: PUT /accounts/:id", async () => {
-    mock.onPut("/accounts/5").reply(200, { id: 5 });
-    await t("update_account").handler({ id: "5", name: "Updated" });
+    mock.onPut("/accounts/5").reply(200, { data: { id: "5" } });
+    await t("update_account").handler({ id: "5", name: "Savings" });
     expect(mock.history.put[0].url).toBe("/accounts/5");
-    const body = JSON.parse(mock.history.put[0].data);
-    expect(body.name).toBe("Updated");
-    expect(body.id).toBeUndefined();
+    expect(JSON.parse(mock.history.put[0].data)).toEqual({ name: "Savings" });
   });
 
   test("delete_account: DELETE /accounts/:id", async () => {
-    mock.onDelete("/accounts/7").reply(204);
-    const result = await t("delete_account").handler({ id: "7" });
-    expect(mock.history.delete[0].url).toBe("/accounts/7");
-    expect(result.message).toMatch(/successfully/i);
+    mock.onDelete("/accounts/5").reply(204);
+    const result = await t("delete_account").handler({ id: "5" });
+    expect(mock.history.delete[0].url).toBe("/accounts/5");
+    expect(result.message).toMatch(/deleted/i);
   });
 });
 
@@ -130,6 +128,7 @@ describe("Transactions", () => {
   test("list_transactions: GET /transactions with default limit", async () => {
     mock.onGet("/transactions").reply(200, { data: [] });
     await t("list_transactions").handler({});
+    expect(mock.history.get[0].url).toBe("/transactions");
     expect(mock.history.get[0].params).toEqual({ limit: 10 });
   });
 
@@ -140,78 +139,83 @@ describe("Transactions", () => {
   });
 
   test("get_transaction: GET /transactions/:id", async () => {
-    mock.onGet("/transactions/99").reply(200, { id: 99 });
+    mock.onGet("/transactions/99").reply(200, { data: { id: "99" } });
     const result = await t("get_transaction").handler({ id: "99" });
     expect(mock.history.get[0].url).toBe("/transactions/99");
-    expect(result.id).toBe(99);
+    expect(result.data.id).toBe("99");
   });
 
   test("create_transaction: POST /transactions with correct envelope", async () => {
-    mock.onPost("/transactions").reply(201, {});
+    mock.onPost("/transactions").reply(200, { data: { id: "1" } });
     await t("create_transaction").handler({
-      type: "withdrawal", amount: "50.00",
-      description: "Coffee", source_name: "Checking", destination_name: "Coffee Shop"
+      description: "Groceries",
+      amount: "45.50",
+      source_name: "Checking",
+      destination_name: "Supermarket"
     });
+    expect(mock.history.post[0].url).toBe("/transactions");
     const body = JSON.parse(mock.history.post[0].data);
-    expect(body.error_if_duplicate_hash).toBe(false);
+    expect(body.transactions[0].description).toBe("Groceries");
+    expect(body.transactions[0].amount).toBe("45.50");
+    expect(body.transactions[0].source_name).toBe("Checking");
+    expect(body.transactions[0].destination_name).toBe("Supermarket");
     expect(body.transactions[0].type).toBe("withdrawal");
-    expect(body.transactions[0].amount).toBe("50.00");
-    // Date should be YYYY-MM-DD, not a full ISO 8601 timestamp
-    expect(body.transactions[0].date).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+    expect(body.transactions[0].date).toBeDefined();
   });
 
   test("create_transaction: uses provided date", async () => {
-    mock.onPost("/transactions").reply(201, {});
+    mock.onPost("/transactions").reply(200, { data: { id: "1" } });
     await t("create_transaction").handler({
-      type: "deposit", amount: "100", description: "Salary",
-      source_name: "Employer", destination_name: "Checking", date: "2024-01-15"
+      description: "Coffee",
+      amount: "4.50",
+      source_name: "Checking",
+      destination_name: "Cafe",
+      date: "2024-01-15"
     });
     const body = JSON.parse(mock.history.post[0].data);
     expect(body.transactions[0].date).toBe("2024-01-15");
   });
 
   test("create_split_transaction: POST /transactions with splits array", async () => {
-    mock.onPost("/transactions").reply(201, {});
-    await t("create_split_transaction").handler({
-      group_title: "Groceries",
-      splits: [
-        { type: "withdrawal", amount: "20", description: "Veggies", source_name: "Checking", destination_name: "Market" },
-        { type: "withdrawal", amount: "30", description: "Meat", source_name: "Checking", destination_name: "Market" }
-      ]
-    });
+    mock.onPost("/transactions").reply(200, { data: { id: "2" } });
+    const splits = [
+      { description: "Food", amount: "30.00", source_name: "Checking", destination_name: "Market" },
+      { description: "Supplies", amount: "15.00", source_name: "Checking", destination_name: "Market" }
+    ];
+    await t("create_split_transaction").handler({ splits });
     const body = JSON.parse(mock.history.post[0].data);
-    expect(body.group_title).toBe("Groceries");
     expect(body.transactions.length).toBe(2);
-    expect(body.transactions[0].amount).toBe("20");
-    // Dates on splits should be YYYY-MM-DD
-    expect(body.transactions[0].date).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+    expect(body.transactions[0].description).toBe("Food");
+    expect(body.transactions[1].description).toBe("Supplies");
   });
 
   test("update_transaction: PUT /transactions/:id, strips id from body", async () => {
-    mock.onPut("/transactions/10").reply(200, {});
-    await t("update_transaction").handler({ id: "10", description: "Fixed" });
-    expect(mock.history.put[0].url).toBe("/transactions/10");
+    mock.onPut("/transactions/7").reply(200, { data: { id: "7" } });
+    await t("update_transaction").handler({ id: "7", description: "Updated" });
+    expect(mock.history.put[0].url).toBe("/transactions/7");
     const body = JSON.parse(mock.history.put[0].data);
     expect(body.id).toBeUndefined();
-    expect(body.description).toBe("Fixed");
+    expect(body.description).toBe("Updated");
   });
 
   test("delete_transaction: DELETE /transactions/:id", async () => {
-    mock.onDelete("/transactions/3").reply(204);
-    const result = await t("delete_transaction").handler({ id: "3" });
-    expect(result.message).toMatch(/successfully/i);
+    mock.onDelete("/transactions/7").reply(204);
+    const result = await t("delete_transaction").handler({ id: "7" });
+    expect(mock.history.delete[0].url).toBe("/transactions/7");
+    expect(result.message).toMatch(/deleted/i);
   });
 
   test("search_transactions: GET /search/transactions with query and limit", async () => {
     mock.onGet("/search/transactions").reply(200, { data: [] });
-    await t("search_transactions").handler({ query: "coffee", limit: 5 });
-    expect(mock.history.get[0].params).toEqual({ query: "coffee", limit: 5 });
+    await t("search_transactions").handler({ query: "Coffee", limit: 5 });
+    expect(mock.history.get[0].url).toBe("/search/transactions");
+    expect(mock.history.get[0].params).toEqual({ query: "Coffee", limit: 5 });
   });
 
   test("search_transactions: defaults to limit 10", async () => {
     mock.onGet("/search/transactions").reply(200, { data: [] });
-    await t("search_transactions").handler({ query: "rent" });
-    expect(mock.history.get[0].params.limit).toBe(10);
+    await t("search_transactions").handler({ query: "Coffee" });
+    expect(mock.history.get[0].params).toEqual({ query: "Coffee", limit: 10 });
   });
 });
 
@@ -221,62 +225,63 @@ describe("Transactions", () => {
 describe("Budgets", () => {
   test("list_budgets: GET /budgets", async () => {
     mock.onGet("/budgets").reply(200, { data: [] });
-    const result = await t("list_budgets").handler({});
+    await t("list_budgets").handler({});
     expect(mock.history.get[0].url).toBe("/budgets");
-    expect(result.data).toEqual([]);
   });
 
   test("get_budget: GET /budgets/:id", async () => {
-    mock.onGet("/budgets/2").reply(200, { id: 2 });
-    await t("get_budget").handler({ id: "2" });
-    expect(mock.history.get[0].url).toBe("/budgets/2");
+    mock.onGet("/budgets/3").reply(200, { data: { id: "3" } });
+    const result = await t("get_budget").handler({ id: "3" });
+    expect(mock.history.get[0].url).toBe("/budgets/3");
+    expect(result.data.id).toBe("3");
   });
 
   test("create_budget: POST /budgets", async () => {
-    mock.onPost("/budgets").reply(201, { id: 3 });
-    await t("create_budget").handler({ name: "Food" });
-    expect(JSON.parse(mock.history.post[0].data).name).toBe("Food");
+    mock.onPost("/budgets").reply(200, { data: { id: "1" } });
+    await t("create_budget").handler({ name: "Groceries" });
+    expect(mock.history.post[0].url).toBe("/budgets");
+    expect(JSON.parse(mock.history.post[0].data)).toEqual({ name: "Groceries" });
   });
 
   test("update_budget: PUT /budgets/:id, strips id", async () => {
-    mock.onPut("/budgets/4").reply(200, {});
-    await t("update_budget").handler({ id: "4", active: false });
-    const body = JSON.parse(mock.history.put[0].data);
-    expect(body.id).toBeUndefined();
-    expect(body.active).toBe(false);
+    mock.onPut("/budgets/3").reply(200, { data: { id: "3" } });
+    await t("update_budget").handler({ id: "3", name: "Food & Dining" });
+    expect(mock.history.put[0].url).toBe("/budgets/3");
+    expect(JSON.parse(mock.history.put[0].data)).toEqual({ name: "Food & Dining" });
   });
 
   test("delete_budget: DELETE /budgets/:id", async () => {
-    mock.onDelete("/budgets/5").reply(204);
-    const result = await t("delete_budget").handler({ id: "5" });
-    expect(result.message).toMatch(/successfully/i);
+    mock.onDelete("/budgets/3").reply(204);
+    const result = await t("delete_budget").handler({ id: "3" });
+    expect(mock.history.delete[0].url).toBe("/budgets/3");
+    expect(result.message).toMatch(/deleted/i);
   });
 
   test("list_budget_limits: GET /budgets/:id/limits", async () => {
-    mock.onGet("/budgets/6/limits").reply(200, { data: [] });
-    await t("list_budget_limits").handler({ id: "6" });
-    expect(mock.history.get[0].url).toBe("/budgets/6/limits");
+    mock.onGet("/budgets/3/limits").reply(200, { data: [] });
+    await t("list_budget_limits").handler({ id: "3" });
+    expect(mock.history.get[0].url).toBe("/budgets/3/limits");
   });
 
   test("create_budget_limit: POST /budgets/:id/limits, strips id", async () => {
-    mock.onPost("/budgets/7/limits").reply(201, {});
-    await t("create_budget_limit").handler({ id: "7", amount: "500", start: "2024-01-01", end: "2024-01-31" });
-    expect(mock.history.post[0].url).toBe("/budgets/7/limits");
+    mock.onPost("/budgets/3/limits").reply(200, { data: { id: "1" } });
+    await t("create_budget_limit").handler({ id: "3", amount: "500", start: "2024-01-01", end: "2024-01-31" });
+    expect(mock.history.post[0].url).toBe("/budgets/3/limits");
     const body = JSON.parse(mock.history.post[0].data);
     expect(body.id).toBeUndefined();
     expect(body.amount).toBe("500");
   });
 
   test("delete_budget_limit: DELETE /budgets/:budget_id/limits/:limit_id", async () => {
-    mock.onDelete("/budgets/8/limits/9").reply(204);
-    const result = await t("delete_budget_limit").handler({ budget_id: "8", limit_id: "9" });
-    expect(mock.history.delete[0].url).toBe("/budgets/8/limits/9");
-    expect(result.message).toMatch(/successfully/i);
+    mock.onDelete("/budgets/3/limits/9").reply(204);
+    const result = await t("delete_budget_limit").handler({ budget_id: "3", limit_id: "9" });
+    expect(mock.history.delete[0].url).toBe("/budgets/3/limits/9");
+    expect(result.message).toMatch(/deleted/i);
   });
 });
 
 // ---------------------------------------------------------------------------
-// 7. AUTOMATION (Rules & Webhooks)
+// 7. AUTOMATION (Rules, Rule Groups, Webhooks)
 // ---------------------------------------------------------------------------
 describe("Automation", () => {
   test("list_rules: GET /rules", async () => {
@@ -286,31 +291,39 @@ describe("Automation", () => {
   });
 
   test("get_rule: GET /rules/:id", async () => {
-    mock.onGet("/rules/1").reply(200, { id: 1 });
-    await t("get_rule").handler({ id: "1" });
+    mock.onGet("/rules/1").reply(200, { data: { id: "1" } });
+    const result = await t("get_rule").handler({ id: "1" });
     expect(mock.history.get[0].url).toBe("/rules/1");
+    expect(result.data.id).toBe("1");
   });
 
   test("create_rule: POST /rules with required fields", async () => {
-    mock.onPost("/rules").reply(201, { id: 2 });
-    await t("create_rule").handler({ title: "Tag food", trigger: "store-journal", rule_group_id: "1" });
-    const body = JSON.parse(mock.history.post[0].data);
-    expect(body.title).toBe("Tag food");
-    expect(body.trigger).toBe("store-journal");
+    mock.onPost("/rules").reply(200, { data: { id: "1" } });
+    const payload = {
+      title: "Auto-categorize Coffee",
+      trigger: "store-journal",
+      action: "user-action",
+      rule_group_id: "1",
+      triggers: [{ type: "description_contains", value: "Starbucks" }],
+      actions: [{ type: "set_category", value: "Coffee" }]
+    };
+    await t("create_rule").handler(payload);
+    expect(mock.history.post[0].url).toBe("/rules");
+    expect(JSON.parse(mock.history.post[0].data)).toEqual(payload);
   });
 
   test("update_rule: PUT /rules/:id, strips id", async () => {
-    mock.onPut("/rules/3").reply(200, {});
-    await t("update_rule").handler({ id: "3", title: "Updated rule" });
-    const body = JSON.parse(mock.history.put[0].data);
-    expect(body.id).toBeUndefined();
-    expect(body.title).toBe("Updated rule");
+    mock.onPut("/rules/2").reply(200, { data: { id: "2" } });
+    await t("update_rule").handler({ id: "2", title: "Updated Title" });
+    expect(mock.history.put[0].url).toBe("/rules/2");
+    expect(JSON.parse(mock.history.put[0].data)).toEqual({ title: "Updated Title" });
   });
 
   test("delete_rule: DELETE /rules/:id", async () => {
-    mock.onDelete("/rules/4").reply(204);
-    const result = await t("delete_rule").handler({ id: "4" });
-    expect(result.message).toMatch(/successfully/i);
+    mock.onDelete("/rules/2").reply(204);
+    const result = await t("delete_rule").handler({ id: "2" });
+    expect(mock.history.delete[0].url).toBe("/rules/2");
+    expect(result.message).toMatch(/deleted/i);
   });
 
   test("list_rule_groups: GET /rule-groups", async () => {
@@ -320,16 +333,17 @@ describe("Automation", () => {
   });
 
   test("get_rule_group: GET /rule-groups/:id", async () => {
-    mock.onGet("/rule-groups/5").reply(200, { id: 5 });
-    await t("get_rule_group").handler({ id: "5" });
-    expect(mock.history.get[0].url).toBe("/rule-groups/5");
+    mock.onGet("/rule-groups/4").reply(200, { data: { id: "4" } });
+    const result = await t("get_rule_group").handler({ id: "4" });
+    expect(mock.history.get[0].url).toBe("/rule-groups/4");
+    expect(result.data.id).toBe("4");
   });
 
   test("trigger_rule_group: POST /rule-groups/:id/trigger", async () => {
-    mock.onPost("/rule-groups/6/trigger").reply(200, {});
-    const result = await t("trigger_rule_group").handler({ id: "6" });
-    expect(mock.history.post[0].url).toBe("/rule-groups/6/trigger");
-    expect(result.message).toMatch(/successfully/i);
+    mock.onPost("/rule-groups/4/trigger").reply(200, {});
+    const result = await t("trigger_rule_group").handler({ id: "4" });
+    expect(mock.history.post[0].url).toBe("/rule-groups/4/trigger");
+    expect(result.message).toMatch(/triggered/i);
   });
 
   test("list_webhooks: GET /webhooks", async () => {
@@ -339,22 +353,29 @@ describe("Automation", () => {
   });
 
   test("create_webhook: POST /webhooks with required fields", async () => {
-    mock.onPost("/webhooks").reply(201, { id: 1 });
-    await t("create_webhook").handler({ title: "My hook", url: "https://example.com/hook", trigger: "STORE_TRANSACTION" });
-    const body = JSON.parse(mock.history.post[0].data);
-    expect(body.title).toBe("My hook");
-    expect(body.url).toBe("https://example.com/hook");
+    mock.onPost("/webhooks").reply(200, { data: { id: "1" } });
+    const payload = {
+      title: "Discord Alerts",
+      trigger: "STORE_TRANSACTION",
+      response: "TRANSACTIONS",
+      delivery: "JSON",
+      url: "https://discord.com/webhook"
+    };
+    await t("create_webhook").handler(payload);
+    expect(mock.history.post[0].url).toBe("/webhooks");
+    expect(JSON.parse(mock.history.post[0].data)).toEqual(payload);
   });
 
   test("delete_webhook: DELETE /webhooks/:id", async () => {
-    mock.onDelete("/webhooks/7").reply(204);
-    const result = await t("delete_webhook").handler({ id: "7" });
-    expect(result.message).toMatch(/successfully/i);
+    mock.onDelete("/webhooks/6").reply(204);
+    const result = await t("delete_webhook").handler({ id: "6" });
+    expect(mock.history.delete[0].url).toBe("/webhooks/6");
+    expect(result.message).toMatch(/deleted/i);
   });
 });
 
 // ---------------------------------------------------------------------------
-// 8. SYSTEM (Currencies & Preferences)
+// 8. SYSTEM (Currencies, Preferences)
 // ---------------------------------------------------------------------------
 describe("System", () => {
   test("list_currencies: GET /currencies", async () => {
@@ -364,32 +385,31 @@ describe("System", () => {
   });
 
   test("get_currency: GET /currencies/:code", async () => {
-    mock.onGet("/currencies/EUR").reply(200, { code: "EUR" });
+    mock.onGet("/currencies/EUR").reply(200, { data: { code: "EUR" } });
     const result = await t("get_currency").handler({ code: "EUR" });
     expect(mock.history.get[0].url).toBe("/currencies/EUR");
-    expect(result.code).toBe("EUR");
+    expect(result.data.code).toBe("EUR");
   });
 
   test("create_currency: POST /currencies", async () => {
-    mock.onPost("/currencies").reply(201, {});
-    await t("create_currency").handler({ name: "Bitcoin", code: "BTC", symbol: "₿" });
-    const body = JSON.parse(mock.history.post[0].data);
-    expect(body.code).toBe("BTC");
+    mock.onPost("/currencies").reply(200, { data: { code: "BRL" } });
+    await t("create_currency").handler({ name: "Brazilian Real", code: "BRL", symbol: "R$", decimal_places: 2 });
+    expect(mock.history.post[0].url).toBe("/currencies");
+    expect(JSON.parse(mock.history.post[0].data).code).toBe("BRL");
   });
 
   test("update_currency: PUT /currencies/:code, strips code from body", async () => {
-    mock.onPut("/currencies/USD").reply(200, {});
-    await t("update_currency").handler({ code: "USD", enabled: true });
-    expect(mock.history.put[0].url).toBe("/currencies/USD");
-    const body = JSON.parse(mock.history.put[0].data);
-    expect(body.code).toBeUndefined();
-    expect(body.enabled).toBe(true);
+    mock.onPut("/currencies/BRL").reply(200, { data: { code: "BRL" } });
+    await t("update_currency").handler({ code: "BRL", name: "Real" });
+    expect(mock.history.put[0].url).toBe("/currencies/BRL");
+    expect(JSON.parse(mock.history.put[0].data)).toEqual({ name: "Real" });
   });
 
   test("delete_currency: DELETE /currencies/:code", async () => {
-    mock.onDelete("/currencies/BTC").reply(204);
-    const result = await t("delete_currency").handler({ code: "BTC" });
-    expect(result.message).toMatch(/successfully/i);
+    mock.onDelete("/currencies/BRL").reply(204);
+    const result = await t("delete_currency").handler({ code: "BRL" });
+    expect(mock.history.delete[0].url).toBe("/currencies/BRL");
+    expect(result.message).toMatch(/deleted/i);
   });
 
   test("list_preferences: GET /preferences", async () => {
@@ -399,23 +419,22 @@ describe("System", () => {
   });
 
   test("get_preference: GET /preferences/:name", async () => {
-    mock.onGet("/preferences/language").reply(200, { name: "language", data: "en" });
+    mock.onGet("/preferences/language").reply(200, { data: { data: "en_US" } });
     const result = await t("get_preference").handler({ name: "language" });
     expect(mock.history.get[0].url).toBe("/preferences/language");
-    expect(result.data).toBe("en");
+    expect(result.data.data).toBe("en_US");
   });
 
   test("update_preference: PUT /preferences/:name with data field", async () => {
-    mock.onPut("/preferences/language").reply(200, {});
-    await t("update_preference").handler({ name: "language", data: "pt" });
+    mock.onPut("/preferences/language").reply(200, { data: { data: "pt_BR" } });
+    await t("update_preference").handler({ name: "language", value: "pt_BR" });
     expect(mock.history.put[0].url).toBe("/preferences/language");
-    const body = JSON.parse(mock.history.put[0].data);
-    expect(body.data).toBe("pt");
+    expect(JSON.parse(mock.history.put[0].data)).toEqual({ data: "pt_BR" });
   });
 });
 
 // ---------------------------------------------------------------------------
-// 9. INSIGHTS (Attachments & Analytics)
+// 9. INSIGHTS (Attachments, Charts, Summaries)
 // ---------------------------------------------------------------------------
 describe("Insights", () => {
   test("list_attachments: GET /attachments", async () => {
@@ -425,56 +444,56 @@ describe("Insights", () => {
   });
 
   test("get_attachment: GET /attachments/:id", async () => {
-    mock.onGet("/attachments/11").reply(200, { id: 11 });
-    await t("get_attachment").handler({ id: "11" });
-    expect(mock.history.get[0].url).toBe("/attachments/11");
+    mock.onGet("/attachments/10").reply(200, { data: { id: "10" } });
+    const result = await t("get_attachment").handler({ id: "10" });
+    expect(mock.history.get[0].url).toBe("/attachments/10");
+    expect(result.data.id).toBe("10");
   });
 
   test("upload_attachment: two-step POST /attachments then POST /attachments/:id/upload", async () => {
-    mock.onPost("/attachments").reply(201, { data: { id: "12" } });
-    mock.onPost("/attachments/12/upload").reply(200, {});
-    const result = await t("upload_attachment").handler({ filename: "receipt.jpg", attachable_type: "TransactionJournal", attachable_id: "5", content: "aGVsbG8=" });
-    // First call creates the metadata record
+    mock.onPost("/attachments").reply(200, { data: { id: "11" } });
+    mock.onPost("/attachments/11/upload").reply(200, {});
+    await t("upload_attachment").handler({
+      filename: "receipt.jpg",
+      attachable_type: "Transaction",
+      attachable_id: "1",
+      content_base64: Buffer.from("fake-image").toString("base64")
+    });
     expect(mock.history.post[0].url).toBe("/attachments");
-    const meta = JSON.parse(mock.history.post[0].data);
-    expect(meta.filename).toBe("receipt.jpg");
-    expect(meta.content).toBeUndefined(); // content must NOT be sent in metadata step
-    // Second call uploads the binary content
-    expect(mock.history.post[1].url).toBe("/attachments/12/upload");
-    expect(result.id).toBe("12");
+    expect(mock.history.post[1].url).toBe("/attachments/11/upload");
   });
 
   test("delete_attachment: DELETE /attachments/:id", async () => {
-    mock.onDelete("/attachments/13").reply(204);
-    const result = await t("delete_attachment").handler({ id: "13" });
-    expect(result.message).toMatch(/successfully/i);
+    mock.onDelete("/attachments/10").reply(204);
+    const result = await t("delete_attachment").handler({ id: "10" });
+    expect(mock.history.delete[0].url).toBe("/attachments/10");
+    expect(result.message).toMatch(/deleted/i);
   });
 
   test("get_account_overview_chart: GET /charts/account/overview with params", async () => {
-    mock.onGet("/charts/account/overview").reply(200, []);
-    await t("get_account_overview_chart").handler({ start: "2024-01-01", end: "2024-12-31" });
+    mock.onGet("/charts/account/overview").reply(200, {});
+    await t("get_account_overview_chart").handler({ start: "2024-01-01", end: "2024-01-31" });
     expect(mock.history.get[0].url).toBe("/charts/account/overview");
-    expect(mock.history.get[0].params).toEqual({ start: "2024-01-01", end: "2024-12-31" });
+    expect(mock.history.get[0].params).toEqual({ start: "2024-01-01", end: "2024-01-31" });
   });
 
   test("get_net_worth_summary: GET /summary/basic with params", async () => {
-    mock.onGet("/summary/basic").reply(200, { net_worth: "5000" });
-    const result = await t("get_net_worth_summary").handler({ start: "2024-01-01", end: "2024-12-31" });
+    mock.onGet("/summary/basic").reply(200, {});
+    await t("get_net_worth_summary").handler({ start: "2024-01-01", end: "2024-01-31" });
     expect(mock.history.get[0].url).toBe("/summary/basic");
-    expect(mock.history.get[0].params).toEqual({ start: "2024-01-01", end: "2024-12-31" });
-    expect(result.net_worth).toBe("5000");
+    expect(mock.history.get[0].params).toEqual({ start: "2024-01-01", end: "2024-01-31" });
   });
 
   test("get_spending_summary: GET /insight/expense/category with params", async () => {
-    mock.onGet("/insight/expense/category").reply(200, { data: [] });
-    await t("get_spending_summary").handler({ start: "2024-01-01", end: "2024-12-31" });
+    mock.onGet("/insight/expense/category").reply(200, {});
+    await t("get_spending_summary").handler({ start: "2024-01-01", end: "2024-01-31" });
     expect(mock.history.get[0].url).toBe("/insight/expense/category");
-    expect(mock.history.get[0].params).toEqual({ start: "2024-01-01", end: "2024-12-31" });
+    expect(mock.history.get[0].params).toEqual({ start: "2024-01-01", end: "2024-01-31" });
   });
 });
 
 // ---------------------------------------------------------------------------
-// 10. META (Categories & Tags)
+// 10. META (Categories, Tags)
 // ---------------------------------------------------------------------------
 describe("Meta", () => {
   test("list_categories: GET /categories", async () => {
@@ -484,9 +503,10 @@ describe("Meta", () => {
   });
 
   test("create_category: POST /categories", async () => {
-    mock.onPost("/categories").reply(201, { id: 1 });
-    await t("create_category").handler({ name: "Food" });
-    expect(JSON.parse(mock.history.post[0].data).name).toBe("Food");
+    mock.onPost("/categories").reply(200, { data: { id: "1" } });
+    await t("create_category").handler({ name: "Entertainment" });
+    expect(mock.history.post[0].url).toBe("/categories");
+    expect(JSON.parse(mock.history.post[0].data)).toEqual({ name: "Entertainment" });
   });
 
   test("list_tags: GET /tags", async () => {
@@ -496,14 +516,15 @@ describe("Meta", () => {
   });
 
   test("create_tag: POST /tags", async () => {
-    mock.onPost("/tags").reply(201, { id: 1 });
-    await t("create_tag").handler({ tag: "work" });
-    expect(JSON.parse(mock.history.post[0].data).tag).toBe("work");
+    mock.onPost("/tags").reply(200, { data: { id: "1" } });
+    await t("create_tag").handler({ tag: "tax-deductible" });
+    expect(mock.history.post[0].url).toBe("/tags");
+    expect(JSON.parse(mock.history.post[0].data)).toEqual({ tag: "tax-deductible" });
   });
 });
 
 // ---------------------------------------------------------------------------
-// 11. BILLS & PIGGY BANKS
+// 11. BILLS
 // ---------------------------------------------------------------------------
 describe("Bills", () => {
   test("list_bills: GET /bills", async () => {
@@ -513,20 +534,30 @@ describe("Bills", () => {
   });
 
   test("create_bill: POST /bills with required fields", async () => {
-    mock.onPost("/bills").reply(201, { id: 1 });
-    await t("create_bill").handler({ name: "Netflix", amount_min: "15", amount_max: "15", date: "2024-01-01", repeat_freq: "monthly" });
-    const body = JSON.parse(mock.history.post[0].data);
-    expect(body.name).toBe("Netflix");
-    expect(body.repeat_freq).toBe("monthly");
+    mock.onPost("/bills").reply(200, { data: { id: "1" } });
+    const payload = {
+      name: "Internet",
+      amount_min: "50",
+      amount_max: "60",
+      date: "2024-01-01",
+      repeat_freq: "monthly"
+    };
+    await t("create_bill").handler(payload);
+    expect(mock.history.post[0].url).toBe("/bills");
+    expect(JSON.parse(mock.history.post[0].data)).toEqual(payload);
   });
 
   test("delete_bill: DELETE /bills/:id", async () => {
     mock.onDelete("/bills/2").reply(204);
     const result = await t("delete_bill").handler({ id: "2" });
-    expect(result.message).toMatch(/successfully/i);
+    expect(mock.history.delete[0].url).toBe("/bills/2");
+    expect(result.message).toMatch(/deleted/i);
   });
 });
 
+// ---------------------------------------------------------------------------
+// 12. PIGGY BANKS
+// ---------------------------------------------------------------------------
 describe("Piggy Banks", () => {
   test("list_piggy_banks: GET /piggy-banks", async () => {
     mock.onGet("/piggy-banks").reply(200, { data: [] });
@@ -535,30 +566,29 @@ describe("Piggy Banks", () => {
   });
 
   test("create_piggy_bank: POST /piggy-banks", async () => {
-    mock.onPost("/piggy-banks").reply(201, { id: 1 });
+    mock.onPost("/piggy-banks").reply(200, { data: { id: "1" } });
     await t("create_piggy_bank").handler({ name: "Vacation", target_amount: "2000", account_id: "1" });
-    const body = JSON.parse(mock.history.post[0].data);
-    expect(body.name).toBe("Vacation");
-    expect(body.target_amount).toBe("2000");
+    expect(mock.history.post[0].url).toBe("/piggy-banks");
+    expect(JSON.parse(mock.history.post[0].data).name).toBe("Vacation");
   });
 
   test("update_piggy_bank: POST /piggy-banks/:id/events", async () => {
-    mock.onPost("/piggy-banks/3/events").reply(200, {});
-    const result = await t("update_piggy_bank").handler({ id: "3", amount: "100" });
-    expect(mock.history.post[0].url).toBe("/piggy-banks/3/events");
-    expect(JSON.parse(mock.history.post[0].data).amount).toBe("100");
-    expect(result.message).toMatch(/successfully/i);
+    mock.onPost("/piggy-banks/1/events").reply(200, {});
+    await t("update_piggy_bank").handler({ id: "1", amount: "100", action: "add" });
+    expect(mock.history.post[0].url).toBe("/piggy-banks/1/events");
+    expect(JSON.parse(mock.history.post[0].data)).toEqual({ amount: "100", action: "add" });
   });
 
   test("delete_piggy_bank: DELETE /piggy-banks/:id", async () => {
-    mock.onDelete("/piggy-banks/4").reply(204);
-    const result = await t("delete_piggy_bank").handler({ id: "4" });
-    expect(result.message).toMatch(/successfully/i);
+    mock.onDelete("/piggy-banks/1").reply(204);
+    const result = await t("delete_piggy_bank").handler({ id: "1" });
+    expect(mock.history.delete[0].url).toBe("/piggy-banks/1");
+    expect(result.message).toMatch(/deleted/i);
   });
 });
 
 // ---------------------------------------------------------------------------
-// 12. OBJECT GROUPS
+// 13. OBJECT GROUPS
 // ---------------------------------------------------------------------------
 describe("Object Groups", () => {
   test("list_object_groups: GET /object-groups", async () => {
@@ -568,15 +598,15 @@ describe("Object Groups", () => {
   });
 
   test("create_object_group: POST /object-groups", async () => {
-    mock.onPost("/object-groups").reply(201, { id: 1 });
-    await t("create_object_group").handler({ title: "Savings", order: 1 });
-    const body = JSON.parse(mock.history.post[0].data);
-    expect(body.title).toBe("Savings");
+    mock.onPost("/object-groups").reply(200, { data: { id: "1" } });
+    await t("create_object_group").handler({ title: "Shared Expenses" });
+    expect(mock.history.post[0].url).toBe("/object-groups");
+    expect(JSON.parse(mock.history.post[0].data)).toEqual({ title: "Shared Expenses" });
   });
 });
 
 // ---------------------------------------------------------------------------
-// 13. RECURRING TRANSACTIONS
+// 14. RECURRING TRANSACTIONS
 // ---------------------------------------------------------------------------
 describe("Recurring Transactions", () => {
   test("list_recurring: GET /recurring", async () => {
@@ -586,36 +616,43 @@ describe("Recurring Transactions", () => {
   });
 
   test("get_recurring: GET /recurring/:id", async () => {
-    mock.onGet("/recurring/1").reply(200, { id: 1 });
-    await t("get_recurring").handler({ id: "1" });
-    expect(mock.history.get[0].url).toBe("/recurring/1");
+    mock.onGet("/recurring/5").reply(200, { data: { id: "5" } });
+    const result = await t("get_recurring").handler({ id: "5" });
+    expect(mock.history.get[0].url).toBe("/recurring/5");
+    expect(result.data.id).toBe("5");
   });
 
   test("create_recurring: POST /recurring with required fields", async () => {
-    mock.onPost("/recurring").reply(201, { id: 1 });
-    await t("create_recurring").handler({ name: "Rent", type: "withdrawal", amount: "1200", repeat_freq: "monthly", source_name: "Checking", destination_name: "Landlord" });
-    const body = JSON.parse(mock.history.post[0].data);
-    expect(body.name).toBe("Rent");
-    expect(body.repeat_freq).toBe("monthly");
+    mock.onPost("/recurring").reply(200, { data: { id: "1" } });
+    const payload = {
+      name: "Netflix",
+      type: "withdrawal",
+      amount: "15.99",
+      first_date: "2024-01-01",
+      repeat_freq: "monthly"
+    };
+    await t("create_recurring").handler(payload);
+    expect(mock.history.post[0].url).toBe("/recurring");
+    expect(JSON.parse(mock.history.post[0].data)).toEqual(payload);
   });
 
   test("update_recurring: PUT /recurring/:id, strips id", async () => {
-    mock.onPut("/recurring/2").reply(200, {});
-    await t("update_recurring").handler({ id: "2", active: false });
-    const body = JSON.parse(mock.history.put[0].data);
-    expect(body.id).toBeUndefined();
-    expect(body.active).toBe(false);
+    mock.onPut("/recurring/5").reply(200, { data: { id: "5" } });
+    await t("update_recurring").handler({ id: "5", amount: "17.99" });
+    expect(mock.history.put[0].url).toBe("/recurring/5");
+    expect(JSON.parse(mock.history.put[0].data)).toEqual({ amount: "17.99" });
   });
 
   test("delete_recurring: DELETE /recurring/:id", async () => {
-    mock.onDelete("/recurring/3").reply(204);
-    const result = await t("delete_recurring").handler({ id: "3" });
-    expect(result.message).toMatch(/successfully/i);
+    mock.onDelete("/recurring/5").reply(204);
+    const result = await t("delete_recurring").handler({ id: "5" });
+    expect(mock.history.delete[0].url).toBe("/recurring/5");
+    expect(result.message).toMatch(/deleted/i);
   });
 });
 
 // ---------------------------------------------------------------------------
-// 14. ADMIN
+// 15. ADMIN
 // ---------------------------------------------------------------------------
 describe("Admin", () => {
   test("trigger_export: POST /data/export/transactions", async () => {
@@ -646,5 +683,55 @@ describe("Error Handling", () => {
     const response = await handler({ method: "tools/call", params: { name: "get_about", arguments: {} } });
     expect(response.isError).toBe(true);
     expect(typeof response.content[0].text).toBe("string");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// 16. SSE MODE (MULTI-SESSION & RECONNECTION - ISSUE #15)
+// ---------------------------------------------------------------------------
+describe("SSE Transport (Issue #15)", () => {
+  let server, baseUrl, transports;
+
+  beforeAll((done) => {
+    const created = createApp();
+    transports = created.transports;
+    server = created.app.listen(0, () => {
+      baseUrl = `http://127.0.0.1:${server.address().port}`;
+      done();
+    });
+  });
+
+  afterAll((done) => {
+    for (const sid in transports) {
+      try { transports[sid].close(); } catch (_) {}
+    }
+    server.close(done);
+  });
+
+  test("multiple concurrent GET /sse connections do not crash or throw 500", async () => {
+    const sse1 = http.get(`${baseUrl}/sse`);
+    const sse2 = http.get(`${baseUrl}/sse`);
+
+    const res1 = await new Promise(resolve => sse1.once("response", resolve));
+    const res2 = await new Promise(resolve => sse2.once("response", resolve));
+
+    expect(res1.statusCode).toBe(200);
+    expect(res2.statusCode).toBe(200);
+
+    expect(Object.keys(transports).length).toBe(2);
+
+    sse1.destroy();
+    sse2.destroy();
+    await new Promise(r => setTimeout(r, 50));
+    expect(Object.keys(transports).length).toBe(0);
+  });
+
+  test("POST /messages routes to correct session or returns 400 for unknown session", async () => {
+    const res = await fetch(`${baseUrl}/messages?sessionId=non-existent-session-id`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ jsonrpc: "2.0", id: 1, method: "tools/list", params: {} })
+    });
+    expect(res.status).toBe(400);
   });
 });

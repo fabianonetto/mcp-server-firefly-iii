@@ -1,6 +1,6 @@
 # Firefly III MCP Server — Claude Code Guide
 
-MCP server bridging Firefly III personal finance manager to AI assistants. 66 tools, Node.js, fully tested (78 tests).
+MCP server bridging Firefly III personal finance manager to AI assistants. 66 tools, Node.js, fully tested (80 tests).
 
 ---
 
@@ -97,7 +97,7 @@ Restart Claude Desktop after saving.
 ## Project Commands
 
 ```bash
-npm test                   # Run 78-test suite (all mocked, no live Firefly needed)
+npm test                   # Run 80-test suite (all mocked, no live Firefly needed)
 node index.js              # Start in stdio mode (MCP clients: Claude Code, Gemini CLI)
 PORT=3001 node index.js    # Start in HTTP/SSE mode (ChatGPT Actions, REST clients)
 docker build -t mcp .      # Build Docker image
@@ -148,7 +148,7 @@ Each tool file exports an array of `{ name, description, inputSchema, handler }`
 
 **Tool count is enforced in tests.** Adding or removing a tool without updating `expect(TOOLS.length).toBe(66)` fails the suite — intentional guard.
 
-**stdio vs HTTP mode** — without `PORT` the server speaks MCP over stdin/stdout. With `PORT` it starts Express with `/sse`, `/messages`, `/api/<tool>`, and `/openapi.json`.
+**stdio vs HTTP mode** — without `PORT` the server speaks MCP over stdin/stdout. With `PORT` it starts Express with `/mcp` (Streamable HTTP), `/sse` & `/messages` (legacy SSE), `/api/<tool>`, and `/openapi.json`.
 
 **`Unauthenticated` on startup is normal** if the token is still the placeholder. The server connects successfully; tool calls fail at the Firefly III API level, not at the MCP level.
 
@@ -160,5 +160,5 @@ Each tool file exports an array of `{ name, description, inputSchema, handler }`
 npm test
 ```
 
-78 tests, 15 describe blocks, all 66 tools covered. No live Firefly III required.
+80 tests, 16 describe blocks, all 66 tools covered. No live Firefly III required.
 See [`docs/TESTING.md`](docs/TESTING.md) for the full coverage table.

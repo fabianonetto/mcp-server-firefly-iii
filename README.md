@@ -95,7 +95,7 @@ See [CLAUDE.md](CLAUDE.md) for the full guide including auto-approval configurat
 
 ---
 
-### Claude Desktop
+## Claude Desktop
 
 Add the server to your Claude Desktop config file:
 
@@ -121,7 +121,7 @@ Restart Claude Desktop after saving.
 
 ---
 
-### Gemini CLI Extension (One-command install)
+## Gemini CLI Extension (One-command install)
 
 ```bash
 gemini extensions install https://github.com/fabianonetto/mcp-server-firefly-iii
@@ -138,7 +138,7 @@ See [gemini.md](gemini.md) for the full guide.
 
 ---
 
-### Docker (Official Image)
+## Docker (Official Image)
 
 The official image is available on GitHub Packages: `ghcr.io/fabianonetto/mcp-server-firefly-iii`.
 
@@ -178,7 +178,7 @@ Add this to your `claude_desktop_config.json`:
 
 ---
 
-### Cursor / VS Code (MCP Extension)
+## Cursor / VS Code (MCP Extension)
 
 Add to your MCP config (`.cursor/mcp.json` or equivalent):
 
@@ -211,8 +211,8 @@ Available endpoints:
 
 | Endpoint | Description |
 | :--- | :--- |
-| `GET /sse` | SSE transport for MCP clients |
-| `POST /messages` | MCP message handler |
+| `GET /sse` | SSE transport for MCP clients (supports multi-session & reconnects) |
+| `POST /messages` | MCP message handler (routes by `?sessionId=...`) |
 | `POST /api/<tool_name>` | Direct REST call to any tool |
 | `GET /openapi.json` | OpenAPI 3.0 spec (import into ChatGPT Actions) |
 
