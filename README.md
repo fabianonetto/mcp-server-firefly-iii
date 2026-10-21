@@ -199,9 +199,9 @@ Add to your MCP config (`.cursor/mcp.json` or equivalent):
 
 ---
 
-### HTTP / SSE Mode (ChatGPT Actions, Custom Apps)
+### HTTP Mode (Streamable HTTP, SSE, ChatGPT Actions, REST)
 
-Start the server with a port to enable the REST and SSE endpoints:
+Start the server with a port to enable the MCP HTTP endpoints and REST API:
 
 ```bash
 FIREFLY_URL=http://your-host:PORT FIREFLY_TOKEN=your_token PORT=3000 node index.js
@@ -211,8 +211,9 @@ Available endpoints:
 
 | Endpoint | Description |
 | :--- | :--- |
-| `GET /sse` | SSE transport for MCP clients (supports multi-session & reconnects) |
-| `POST /messages` | MCP message handler (routes by `?sessionId=...`) |
+| `POST /mcp`, `GET /mcp`, `DELETE /mcp` | Streamable HTTP transport (recommended for modern MCP clients like n8n) |
+| `GET /sse` | Server-Sent Events (SSE) transport (supports multiple concurrent sessions & reconnects) |
+| `POST /messages` | SSE message endpoint (routes by `?sessionId=...`) |
 | `POST /api/<tool_name>` | Direct REST call to any tool |
 | `GET /openapi.json` | OpenAPI 3.0 spec (import into ChatGPT Actions) |
 

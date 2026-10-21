@@ -735,3 +735,118 @@ describe("SSE Transport (Issue #15)", () => {
     expect(res.status).toBe(400);
   });
 });
+
+// ---------------------------------------------------------------------------
+// 17. STREAMABLE HTTP TRANSPORT (ISSUE #16)
+// ---------------------------------------------------------------------------
+describe("Streamable HTTP Transport (Issue #16)", () => {
+  let server, baseUrl, transports;
+
+  beforeAll((done) => {
+    const created = createApp();
+    transports = created.transports;
+    server = created.app.listen(0, () => {
+      baseUrl = `http://127.0.0.1:${server.address().port}`;
+      done();
+    });
+  });
+
+  afterAll((done) => {
+    for (const sid in transports) {
+      try { transports[sid].close(); } catch (_) {}
+    }
+    server.close(done);
+  });
+
+  test("OPTIONS /mcp returns CORS headers and 204 status", async () => {
+    const res = await fetch(`${baseUrl}/mcp`, { method: "OPTIONS" });
+    expect(res.status).toBe(204);
+    expect(res.headers.get("access-control-allow-origin")).toBe("*");
+    expect(res.headers.get("access-control-expose-headers")).toContain("mcp-session-id");
+  });
+
+  test("POST /mcp without session ID returns 400 for non-initialize requests", async () => {
+    const res = await fetch(`${baseUrl}/mcp`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ jsonrpc: "2.0", id: 1, method: "tools/list", params: {} })
+    });
+    expect(res.status).toBe(400);
+  });
+
+  test("Streamable HTTP session lifecycle: initialize -> list tools -> call tool -> delete session", async () => {
+    // 1. Initialize session
+    const initRes = await fetch(`${baseUrl}/mcp`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        jsonrpc: "2.0",
+        id: 1,
+        method: "initialize",
+        params: {
+          protocolVersion: "2024-11-05",
+          capabilities: {},
+          clientInfo: { name: "test-client", version: "1.0.0" }
+        }
+      })
+    });
+
+    expect(initRes.status).toBe(200);
+    const sessionId = initRes.headers.get("mcp-session-id");
+    expect(sessionId).toBeDefined();
+    expect(typeof sessionId).toBe("string");
+    const initData = await initRes.json();
+    expect(initData.result.serverInfo.name).toBe("mcp-server-firefly-iii");
+
+    // 2. List tools
+    const listRes = await fetch(`${baseUrl}/mcp`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "mcp-session-id": sessionId
+      },
+      body: JSON.stringify({
+        jsonrpc: "2.0",
+        id: 2,
+        method: "tools/list",
+        params: {}
+      })
+    });
+
+    expect(listRes.status).toBe(200);
+    const listData = await listRes.json();
+    expect(listData.result.tools.length).toBe(66);
+
+    // 3. Call tool
+    mock.onGet("/about").reply(200, { version: "6.0.0" });
+    const callRes = await fetch(`${baseUrl}/mcp`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "mcp-session-id": sessionId
+      },
+      body: JSON.stringify({
+        jsonrpc: "2.0",
+        id: 3,
+        method: "tools/call",
+        params: {
+          name: "get_about",
+          arguments: {}
+        }
+      })
+    });
+
+    expect(callRes.status).toBe(200);
+    const callData = await callRes.json();
+    expect(callData.result.content[0].text).toContain("6.0.0");
+
+    // 4. Terminate session with DELETE
+    const delRes = await fetch(`${baseUrl}/mcp`, {
+      method: "DELETE",
+      headers: {
+        "mcp-session-id": sessionId
+      }
+    });
+    expect(delRes.status).toBe(200);
+  });
+});

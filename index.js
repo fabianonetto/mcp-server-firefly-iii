@@ -2,10 +2,13 @@
 const { Server } = require("@modelcontextprotocol/sdk/server/index.js");
 const { StdioServerTransport } = require("@modelcontextprotocol/sdk/server/stdio.js");
 const { SSEServerTransport } = require("@modelcontextprotocol/sdk/server/sse.js");
+const { StreamableHTTPServerTransport } = require("@modelcontextprotocol/sdk/server/streamableHttp.js");
 const {
   CallToolRequestSchema,
   ListToolsRequestSchema,
+  isInitializeRequest,
 } = require("@modelcontextprotocol/sdk/types.js");
+const { randomUUID } = require("crypto");
 const express = require("express");
 const { FIREFLY_URL, FIREFLY_TOKEN, PORT, apiClient } = require("./src/config.js");
 
@@ -79,10 +82,106 @@ function createApp() {
   const app = express();
   app.use(express.json());
 
-  // Store active transports by session ID for multi-session SSE
+  // Store active transports by session ID for multi-session SSE & Streamable HTTP
   const transports = {};
 
-  // --- Multi-Session SSE Transport (protocol version 2024-11-05) ---
+  // --- Streamable HTTP Transport (MCP specification) ---
+  app.all("/mcp", async (req, res) => {
+    res.setHeader("Access-Control-Allow-Origin", "*");
+    res.setHeader("Access-Control-Allow-Methods", "GET, POST, DELETE, OPTIONS");
+    res.setHeader("Access-Control-Allow-Headers", "Content-Type, mcp-session-id, last-event-id, authorization");
+    res.setHeader("Access-Control-Expose-Headers", "mcp-session-id");
+
+    if (req.method === "OPTIONS") {
+      res.status(204).end();
+      return;
+    }
+
+    try {
+      if (req.method === "POST") {
+        const accept = req.headers["accept"];
+        if (!accept || !accept.includes("text/event-stream") || !accept.includes("application/json")) {
+          let found = false;
+          if (req.rawHeaders) {
+            for (let i = 0; i < req.rawHeaders.length; i += 2) {
+              if (req.rawHeaders[i].toLowerCase() === "accept") {
+                req.rawHeaders[i + 1] = "application/json, text/event-stream";
+                found = true;
+              }
+            }
+            if (!found) {
+              req.rawHeaders.push("accept", "application/json, text/event-stream");
+            }
+          }
+          req.headers["accept"] = "application/json, text/event-stream";
+        }
+      }
+
+      const sessionId = req.headers["mcp-session-id"] || req.query.sessionId;
+      let transport;
+
+      if (sessionId && transports[sessionId]) {
+        const existingTransport = transports[sessionId];
+        if (existingTransport instanceof StreamableHTTPServerTransport) {
+          transport = existingTransport;
+        } else {
+          res.status(400).json({
+            jsonrpc: "2.0",
+            error: {
+              code: -32000,
+              message: "Bad Request: Session exists but uses a different transport protocol"
+            },
+            id: null
+          });
+          return;
+        }
+      } else if (!sessionId && req.method === "POST" && isInitializeRequest(req.body)) {
+        transport = new StreamableHTTPServerTransport({
+          sessionIdGenerator: () => randomUUID(),
+          enableJsonResponse: true,
+          onsessioninitialized: (sid) => {
+            transports[sid] = transport;
+          }
+        });
+
+        transport.onclose = () => {
+          const sid = transport.sessionId;
+          if (sid && transports[sid]) {
+            delete transports[sid];
+          }
+        };
+
+        const server = createMcpServer();
+        await server.connect(transport);
+      } else {
+        res.status(400).json({
+          jsonrpc: "2.0",
+          error: {
+            code: -32000,
+            message: "Bad Request: No valid session ID provided"
+          },
+          id: null
+        });
+        return;
+      }
+
+      await transport.handleRequest(req, res, req.body);
+    } catch (error) {
+      console.error("Error handling Streamable HTTP request:", error);
+      if (!res.headersSent) {
+        res.status(500).json({
+          jsonrpc: "2.0",
+          error: {
+            code: -32603,
+            message: "Internal server error"
+          },
+          id: null
+        });
+      }
+    }
+  });
+
+  // --- Legacy SSE Transport (protocol version 2024-11-05) ---
   app.get("/sse", async (req, res) => {
     try {
       const transport = new SSEServerTransport("/messages", res);
@@ -193,6 +292,8 @@ async function runServer() {
 
     const server = app.listen(PORT, () => {
       console.error(`Universal AI Bridge running at http://localhost:${PORT}`);
+      console.error(`- Streamable HTTP: http://localhost:${PORT}/mcp`);
+      console.error(`- Legacy SSE:      http://localhost:${PORT}/sse`);
     });
 
     const cleanup = async () => {
